@@ -1,0 +1,17 @@
+\begin{thebibliography}{1}\itemsep=-1pt
+
+\bibitem{Bell_thebellkor}
+R.~M. Bell, Y.~Koren, and C.~Volinsky.
+\newblock The bellkor solution to the netflix prize, 2008.
+
+\bibitem{LuHG13}
+Y.~Lu, S.~E. Helou, and D.~Gillet.
+\newblock A recommender system for job seeking and recruiting website.
+\newblock In {\em WWW (Companion Volume)}, pages 963--966, 2013.
+
+\bibitem{Piotte09thepragmatic}
+M.~Piotte and M.~Chabbert.
+\newblock The pragmatic theory solution to the netflix grand prize, in: Netflix
+  prize documentation, 2009.
+
+\end{thebibliography}
