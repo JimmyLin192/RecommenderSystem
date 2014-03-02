@@ -14,7 +14,7 @@ import nltk.corpus
 from nltk.corpus import stopwords
 from nltk.text import TextCollection
 from nltk.text import Text
-
+import heapq
 
 def createTextFromTxtFile (fn):
     '''    
@@ -61,7 +61,7 @@ def getTextCollectionFromTxtFile (fn):
         text, tokens = getTextFromString(line)
         tc.append(text)
         alltokens.extend(tokens)
-    return TextCollection(tc), alltokens
+    return tc, alltokens
 
 def unique (tokens):
     '''
@@ -85,14 +85,51 @@ def computeTF (term, text, alltexts):
     tf = alltexts.tf(term, text)
     return tf
 
-if __name__ == '__main__':
-    alltexts, alltokens = getTextCollectionFromTxtFile('./sampled_jobs.tsv')
-    uniqtokens, nbefore, nafter = unique(alltokens)
+class PriorityQueue:
+    """
+      Implements a priority queue data structure. Each inserted item
+      has a priority associated with it and the client is usually interested
+      in quick retrieval of the lowest-priority item in the queue. This
+      data structure allows O(1) access to the lowest-priority item.
 
+      Note that this PriorityQueue does not allow you to change the priority
+      of an item.  However, you may insert the same item multiple times with
+      different priorities.
+    """
+    def  __init__(self):
+        self.heap = []
+        self.count = 0
+
+    def push(self, item, priority):
+        entry = (priority, self.count, item)
+        heapq.heappush(self.heap, entry)
+        self.count += 1
+
+    def pop(self):
+        (_, _, item) = heapq.heappop(self.heap)
+        return item
+
+    def isEmpty(self):
+        return len(self.heap) == 0
+
+if __name__ == '__main__':
+    alltexts, alltokens = getTextCollectionFromTxtFile('./so.txt')
+    uniqtokens, nbefore, nafter = unique(alltokens)
+    textCollection = TextCollection(alltexts)
+
+    nTexts = len(alltexts)
+    print "nTexts: ", nTexts
+
+    pq = PriorityQueue()
     for term in uniqtokens:
         term_vector = []
-        for ti in range(0, len(alltexts)):
+        for ti in range(0, nTexts):
             text = alltexts[ti]
-            tfidf = alltexts.tf_idf (term, text)
+            tfidf = textCollection.tf_idf (term, text)
             term_vector.append(tfidf)
-        print term, term_vector
+        summation = sum(term_vector) 
+        pq.push((term, summation), summation)
+
+    for i in range(0, pq.count):
+        term, summation = pq.pop()
+        print term, summation
