@@ -14,15 +14,16 @@ import csv
 
 #TODO: diminish the dimensionality of user vector
 
-with open('./../Dataset/users.tsv','rb') as tsvin, open('./newUsers.csv', 'wb') as csvout:
+with open('./../Dataset/users.tsv','rb') as tsvin, \
+    open('./trainUsers.csv', 'wb') as csvTrainOut, \
+    open('./testUsers.csv', 'wb') as csvTestOut:
     tsvin = csv.reader(tsvin, delimiter='\t')
-    csvout = csv.writer(csvout)
+    csvTrainOut = csv.writer(csvTrainOut)
+    csvTestOut = csv.writer(csvTestOut)
 
     header = tsvin.next()
     nColumns = len(header)
 
-    ## HEADER FORMULATION
-    csvout.writerows([header[:9]+ header[10:]])
 
     dictionaries = [] # dictionary for discretizing each column
     values = [] # numerical count of distinct label
@@ -31,17 +32,22 @@ with open('./../Dataset/users.tsv','rb') as tsvin, open('./newUsers.csv', 'wb') 
         values.append(0)
 
     ## DISCRITIZATION
-    discretSet = range(3,9) + range(12,15) # set of index to discretize
-    removeSet = [9] # set of index to remove
-    SCSUsers = []  # users matrix by simple coding scheme
+    discretSet = range(3,9) + range(10,15) # set of index to discretize
+    removeSet = [2,9] # set of index to remove
+    zipIdx = 6
+    SCSUsers = [] # users matrix by simple coding scheme
     BCSUsers = [] # users matrix by binary coding scheme
     for user in tsvin:
+        split = user[2]
         userid = user[0]
         for i in discretSet:
-            if not dictionaries[i].has_key(user[i]):
-                dictionaries[i][user[i]] = values[i]
+            key = user[i]
+            #if i == zipIdx:
+            #    key = key[:-1]
+            if not dictionaries[i].has_key(key):
+                dictionaries[i][key] = values[i]
                 values[i] += 1
-            user[i] = dictionaries[i][user[i]]
+            user[i] = dictionaries[i][key]
         scsUser = user
         SCSUsers.append(scsUser)
 
@@ -49,9 +55,16 @@ with open('./../Dataset/users.tsv','rb') as tsvin, open('./newUsers.csv', 'wb') 
     print "nSCSFeatures:", nSCSFeatures
     
     print "Domain size of each variables: "
+    newheader = []
     for i in range(0, nColumns):
+        if i in removeSet: continue
         if values[i] <= 0: values[i] = 1
         print "  ", header[i], values[i]
+        newheader = newheader + [header[i]] * values[i]
+
+    ## HEADER FORMULATION
+    csvTrainOut.writerows([newheader])
+    csvTestOut.writerows([newheader])
     nBCSFeatures = None
     for scsUser in SCSUsers:
         bcsUser = [] # new user vector in binary coding scheme
@@ -70,6 +83,9 @@ with open('./../Dataset/users.tsv','rb') as tsvin, open('./newUsers.csv', 'wb') 
             print "nBCSFeatures (total):", nBCSFeatures
         else:
             assert(nBCSFeatures == len(bcsUser))
-        BCSUsers.append(bcsUser)
+        #BCSUsers.append(bcsUser)
         ## output to external csv, piece by piece
-        csvout.writerows([bcsUser])
+        if split == 'Test':
+            csvTestOut.writerows([bcsUser])
+        else:
+            csvTrainOut.writerows([bcsUser])
