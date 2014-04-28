@@ -6,7 +6,7 @@ with open('./sampleData/sampled_train_apps.tsv') as trainIn, \
         open('./sampleData/newJobs.csv') as jobIn, \
         open('./sampleData/joint.csv', 'w') as csvout:
 
-    csvout = csv.writer(csvout)
+    csvout = csv.writer(csvout, delimiter=' ')
 
     trainSet = csv.reader(trainIn, delimiter='\t')
     testSet = csv.reader(testIn, delimiter='\t')
@@ -50,7 +50,17 @@ with open('./sampleData/sampled_train_apps.tsv') as trainIn, \
         else:
             print "ERROR"
 
-        jointEntity = [userid, jobid] + userfeat + jobfeat + [1]
+        jointEntity = ["+1"]
+        #jointEntity = [jointEntity] + [userid, jobid]
+        for i in range(len(userfeat)):
+            if userfeat[i] is None or len(userfeat[i]) == 0:
+                userfeat[i] = 0
+            jointEntity.append(str(i+1) + ":" + str(userfeat[i]))
+        nUserFeatures = len(userfeat)
+        for j in range(len(jobfeat)):
+            if jobfeat[j] is None or len(jobfeat[j]) == 0:
+                jobfeat[j] = 0
+            jointEntity.append(str(nUserFeatures+j+1) + ":" + str(jobfeat[j]))
         #print jointEntity
         #trainEntities.append(jointEntity)
         #trainLabels.append(1)
