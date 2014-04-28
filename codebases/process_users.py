@@ -21,9 +21,12 @@ with open('./../Dataset/users.tsv','rb') as tsvin, \
     csvTrainOut = csv.writer(csvTrainOut)
     csvTestOut = csv.writer(csvTestOut)
 
+    '''
+    UserID,WindowID,Split,City,State,Country,ZipCode,DegreeType,Major,
+    WorkHistoryCount,TotalYearsExperience,CurrentlyEmployed,ManagedOthers,ManagedHowMany
+    '''
     header = tsvin.next()
     nColumns = len(header)
-
 
     dictionaries = [] # dictionary for discretizing each column
     values = [] # numerical count of distinct label
@@ -32,11 +35,17 @@ with open('./../Dataset/users.tsv','rb') as tsvin, \
         values.append(0)
 
     ## DISCRITIZATION
-    discretSet = range(3,9) + range(10,15) # set of index to discretize
-    removeSet = [2,9] # set of index to remove
+    discretSet = range(3,9) + range(12,14) # set of index to discretize
+    removeSet = [2,3,5,6,9] # set of index to remove
+    remainedSet = list(set(range(0,len(header))).difference(set(removeSet)))
+    remainedSet.sort()
     zipIdx = 6
     SCSUsers = [] # users matrix by simple coding scheme
     BCSUsers = [] # users matrix by binary coding scheme
+    newheader = [header[i] for i in remainedSet]
+    csvTestOut.writerows([newheader])
+    csvTrainOut.writerows([newheader])
+
     for user in tsvin:
         split = user[2]
         userid = user[0]
@@ -48,7 +57,12 @@ with open('./../Dataset/users.tsv','rb') as tsvin, \
                 dictionaries[i][key] = values[i]
                 values[i] += 1
             user[i] = dictionaries[i][key]
-        scsUser = user
+
+        scsUser = [user[i] for i in remainedSet]
+        if split == 'Test':
+            csvTestOut.writerows([scsUser])
+        else:
+            csvTrainOut.writerows([scsUser])
         SCSUsers.append(scsUser)
 
     nSCSFeatures = len(SCSUsers[0])
@@ -62,7 +76,22 @@ with open('./../Dataset/users.tsv','rb') as tsvin, \
         print "  ", header[i], values[i]
         newheader = newheader + [header[i]] * values[i]
 
+    ## output the accumulated counter
+    for i in range(nColumns):
+        if i in removeSet: continue
+        domainSize = len(dictionaries[i].items())
+        if not (domainSize == 0):
+            print '===========', header[i], '==========='
+            items = dictionaries[i].items()
+            if domainSize <= 300:
+                for key, value in items:
+                    print key, ":::",  value
+            else:
+                print items[1][0], ":::",  items[1][1]
+                print "::::::::::::::::::::::::::::::"
+                print items[-1][0], ":::",  items[-1][1]
     ## HEADER FORMULATION
+    '''
     csvTrainOut.writerows([newheader])
     csvTestOut.writerows([newheader])
     nBCSFeatures = None
@@ -89,3 +118,4 @@ with open('./../Dataset/users.tsv','rb') as tsvin, \
             csvTestOut.writerows([bcsUser])
         else:
             csvTrainOut.writerows([bcsUser])
+    '''
