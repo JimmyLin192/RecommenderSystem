@@ -163,18 +163,7 @@ def computeTF (term, text, alltexts):
     Output:
         tf
     '''
-    tokens = text.tokens 
-    lowerCasedTokens = lowerCase(tokens) 
-    punctionRemovedTokens = removePunctions(lowerCasedTokens)
-    stemmedTokens = getStemmes(punctionRemovedTokens)
-    stampsRemovedTokens = preFilter(stemmedTokens)
-    othersRemovedTokens = removeOthers(stampsRemovedTokens)
-    for t in othersRemovedTokens:
-        uniqtokens, nbefore, nafter = unique(othersRemovedTokens)
-        
-       
-
-    return tf
+    return text.count(term)
 
 class PriorityQueue:
     """
@@ -275,7 +264,7 @@ if __name__ == '__main__':
         # post prunning
         if support < minSupport: continue
         else:
-            print [term, support, DF]
+            print term, support, DF
         '''
         if DF < minDF: continue
         if DFpercent > maxDFPercent : continue
