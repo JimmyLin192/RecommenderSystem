@@ -24,7 +24,7 @@ with open('./sampleData/sampled_train_apps.tsv') as trainIn, \
     allusers = {}
     for user in userSet:
         ukey = int(user[0])
-        uvalue = tuple(user[3:])
+        uvalue = tuple(user[1:])
         # print ukey, uvalue 
         allusers.update({ukey:uvalue})
         
@@ -36,10 +36,16 @@ with open('./sampleData/sampled_train_apps.tsv') as trainIn, \
         # print jkey, jvalue
         alljobs.update({jkey:jvalue})
 
+    # nominal attribute
+    BCSTable = {}
+    BCSTable.update({1:222})
+    BCSTable.update({2:7})
+    BCSTable.update({3:47072})
     # set up training join table
     trainEntities = []
     trainLabels = []
     for app in trainSet:
+        nUserFeatures = 1
         userid = int(app[0])
         if allusers.has_key(userid):
             userfeat = list(allusers[userid])
@@ -55,23 +61,30 @@ with open('./sampleData/sampled_train_apps.tsv') as trainIn, \
         jointEntity = ["+1"]
         #jointEntity = [jointEntity] + [userid, jobid]
         for i in range(len(userfeat)):
-            if userfeat[i] is None or len(userfeat[i]) == 0:
-                userfeat[i] = 0
-            jointEntity.append(str(i+1) + ":" + str(userfeat[i]))
-        nUserFeatures = len(userfeat)
+            if BCSTable.has_key(i): # for nominal attribute
+                jointEntity.append(str(nUserFeatures + int(userfeat[i]))+":1")
+                nUserFeatures += BCSTable[i]
+            else:
+                if userfeat[i] is None or len(userfeat[i]) == 0:
+                    userfeat[i] = 0
+                jointEntity.append(str(nUserFeatures) + ":" + str(userfeat[i]))
+                nUserFeatures += 1
+
         for j in range(len(jobfeat)):
-            if jobfeat[j] is None or len(jobfeat[j]) == 0:
+            if jobfeat[j] is None or len(jobfeat[j]) == 0 or jobfeat[j] =='0':
                 jobfeat[j] = 0
-            jointEntity.append(str(nUserFeatures+j+1) + ":" + str(jobfeat[j]))
+            else:
+                jointEntity.append(str(nUserFeatures+j+1) + ":" + str(jobfeat[j]))
         #print jointEntity
-        #trainEntities.append(jointEntity)
-        #trainLabels.append(1)
+        trainEntities.append(jointEntity)
+        trainLabels.append(1)
         csvtrainout.writerows([jointEntity])
 
     # set up test join table
     testEntities = []
     testLabels = []
     for app in testSet:
+        nUserFeatures = 1
         userid = int(app[0])
         if allusers.has_key(userid):
             userfeat = list(allusers[userid])
@@ -87,16 +100,22 @@ with open('./sampleData/sampled_train_apps.tsv') as trainIn, \
         jointEntity = ["+1"]
         #jointEntity = [jointEntity] + [userid, jobid]
         for i in range(len(userfeat)):
-            if userfeat[i] is None or len(userfeat[i]) == 0:
-                userfeat[i] = 0
-            jointEntity.append(str(i+1) + ":" + str(userfeat[i]))
-        nUserFeatures = len(userfeat)
+            if BCSTable.has_key(i): # for nominal attribute
+                jointEntity.append(str(nUserFeatures + int(userfeat[i]))+":1")
+                nUserFeatures += BCSTable[i]
+            else:
+                if userfeat[i] is None or len(userfeat[i]) == 0:
+                    userfeat[i] = 0
+                jointEntity.append(str(nUserFeatures) + ":" + str(userfeat[i]))
+                nUserFeatures += 1
+
         for j in range(len(jobfeat)):
-            if jobfeat[j] is None or len(jobfeat[j]) == 0:
+            if jobfeat[j] is None or len(jobfeat[j]) == 0 or jobfeat[j] == '0':
                 jobfeat[j] = 0
-            jointEntity.append(str(nUserFeatures+j+1) + ":" + str(jobfeat[j]))
+            else:
+                jointEntity.append(str(nUserFeatures+j+1) + ":" + str(jobfeat[j]))
         #print jointEntity
-        #testEntities.append(jointEntity)
-        #testLabels.append(1)
+        testEntities.append(jointEntity)
+        testLabels.append(1)
         csvtestout.writerows([jointEntity])
 
