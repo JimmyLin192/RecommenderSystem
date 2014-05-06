@@ -2,8 +2,8 @@ Code bases For Recommener System
 ========================
 
 Contributors: 
-    Jimmy Lin 
-    Minwoo Bae
+
+>    Jimmy Lin 
 	
 
 Overall Achievement
