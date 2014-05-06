@@ -1,18 +1,17 @@
 function [predict_label, accuracy] = oneClassSVM ()
 
-filename = './sampleData/joint.csv';
-[labels, instances] = libsvmread(filename)
+train_filename = './sampleData/joint_train.csv';
+test_filename = './sampleData/joint_test.csv';
+[train_labels, train_instances] = libsvmread(train_filename);
+[test_labels, test_instances] = libsvmread(test_filename);
 
-nInsts = size(labels);
-nTrainInst = 100;
 
-train_label = labels(1:nTrainInst, :);
-test_label = labels(nTrainInst:nInsts, :);
-train_instance = instances(1:nTrainInst, :);
-test_instance = instances(nTrainInst:nInsts,:);
+% one-class support vector machine
+model = svmtrain(train_labels, train_instances, '-s 2');
 
-model = svmtrain(train_label, train_instance, '-s 2');
+[predict_label, accuracy, prob_estimates] = svmpredict(test_labels, test_instances, model);
 
-[predict_label, accuracy, prob_estimates] = svmpredict(test_label, test_instance, model);
+predict_label
+accuracy
 
 end

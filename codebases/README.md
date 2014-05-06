@@ -5,8 +5,14 @@ Contributors:
     Jimmy Lin 
     Minwoo Bae
 	
-Vectorize text decription of job
+
+Overall Achievement
 ----------
+1. One class support vector machine with 33.3% implementation
+
+Extract feature from decription of job
+----------
+#Vectorize text decription of job
 Within 2000 texts with initially 3300 unique words
 
 1. convert all terms into lowercase
@@ -21,5 +27,9 @@ Within 2000 texts with initially 3300 unique words
 11. check validity of a word
 12. remove tenses
 
-3. non-content-bearing high-frequency and low-frequency words 
-4. extract word phrase
+
+#What we can improve?
+1. non-content-bearing high-frequency and low-frequency words 
+2. extract word phrase
+3. 
+
