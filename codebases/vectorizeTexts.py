@@ -247,7 +247,6 @@ if __name__ == '__main__':
         text.tokens = processTokens (text.tokens) 
     
     for term in uniqtokens:
-        tfidfwriter.writerow([term])
         tf_vector = []
         #tfidf_vector = []
         for ti in range(0, nTexts):
