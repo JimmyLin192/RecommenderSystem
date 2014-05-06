@@ -245,7 +245,15 @@ if __name__ == '__main__':
     allTF = []
     allTFIDF = []
 
-    pq = PriorityQueue()
+    for ti in range(0, nTexts):
+        text = alltexts[ti]
+        lowerCasedTokens = lowerCase(text.tokens) 
+        punctionRemovedTokens = removePunctions(lowerCasedTokens)
+        stemmedTokens = getStemmes(punctionRemovedTokens)
+        stampsRemovedTokens = preFilter(stemmedTokens)
+        othersRemovedTokens = removeOthers(stampsRemovedTokens)
+        text.tokens = othersRemovedTokens
+    
     for term in uniqtokens:
         tfidfwriter.writerow([term])
         tf_vector = []
@@ -265,12 +273,13 @@ if __name__ == '__main__':
         #tfidfwriter.writerow([term, support, DF, DFpercent])
         tfidfwriter.writerow([term, support, DF])
         # post prunning
-        '''
         if support < minSupport: continue
+        else:
+            print [term, support, DF]
+        '''
         if DF < minDF: continue
         if DFpercent > maxDFPercent : continue
         '''
         ## pq.push((term, support, DF, DFpercent), -support)
-
-   print "DONE"
+    print "DONE"
 
