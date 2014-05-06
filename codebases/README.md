@@ -8,10 +8,28 @@ Contributors:
 
 Overall Achievement
 ----------
-1. One class support vector machine with 33.3% implementation
+1. One class support vector machine with 42.5% implementation
+Note that this model is seriously underfitted since the dimensionality
+extremely large, comparing to the training data.
 
 Extract feature from decription of job
 ----------
+Domain size of each variables: 
+   UserID 1
+   WindowID 1
+   State 222
+   DegreeType 7
+   Major 47072
+   WorkHistoryCount 1
+   TotalYearsExperience 1
+   CurrentlyEmployed 3
+   ManagedOthers 2
+   ManagedHowMany 1
+
+#TODO:
+1. Merge the majors: represent majors with major categories, maybe 7
+   categories, like science, arts, engineering
+
 #Vectorize text decription of job
 Within 2000 texts with initially 3300 unique words
 
@@ -31,5 +49,3 @@ Within 2000 texts with initially 3300 unique words
 #What we can improve?
 1. non-content-bearing high-frequency and low-frequency words 
 2. extract word phrase
-3. 
-
