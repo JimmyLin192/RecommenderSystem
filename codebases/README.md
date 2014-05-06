@@ -14,16 +14,25 @@ Overall Achievement
 Extract feature from decription of job
 ----------
 Domain size of each variables: 
-   UserID 1
-   WindowID 1
-   State 222
-   DegreeType 7
-   Major 47072
-   WorkHistoryCount 1
-   TotalYearsExperience 1
-   CurrentlyEmployed 3
-   ManagedOthers 2
-   ManagedHowMany 1
+>   UserID 1
+>   
+>   WindowID 1
+>   
+>   State 222
+>   
+>   DegreeType 7
+>   
+>   Major 47072
+>   
+>   WorkHistoryCount 1
+>   
+>   TotalYearsExperience 1
+>   
+>   CurrentlyEmployed 3
+>   
+>   ManagedOthers 2
+>   
+>   ManagedHowMany 1
 
 #How to improve?
 1. Merge the majors: represent majors with major categories, maybe 7
@@ -33,17 +42,18 @@ Domain size of each variables:
 
 #Vectorize text decription of job
 Within 2000 texts with initially over 5000 unique words
-1. convert all terms into lowercase
-2. eliminate stop words
+
+1. Convert all terms into lowercase
+2. Eliminate stop words
 3. Remove punctuations
-4. only consider linguistic stemmes for each tokens
+4. Only consider linguistic stemmes for each tokens
 5. Remove all timestamps 
 6. Remove all datestamps
-8. remove IP address and website link
+8. Remove IP address and website link
 9. Remove all phone numbers
 10. Remove term consisting of pure digits
-11. check validity of a word
-12. remove tenses, plurals (get stems)
+11. Check validity of a word
+12. Remove tenses, plurals (get stems)
 
 Current implementation curtail the size of keywords to be about 1700. 
 
