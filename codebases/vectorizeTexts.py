@@ -163,18 +163,7 @@ def computeTF (term, text, alltexts):
     Output:
         tf
     '''
-    tokens = text.tokens 
-    lowerCasedTokens = lowerCase(tokens) 
-    punctionRemovedTokens = removePunctions(lowerCasedTokens)
-    stemmedTokens = getStemmes(punctionRemovedTokens)
-    stampsRemovedTokens = preFilter(stemmedTokens)
-    othersRemovedTokens = removeOthers(stampsRemovedTokens)
-    for t in othersRemovedTokens:
-        uniqtokens, nbefore, nafter = unique(othersRemovedTokens)
-        
-       
-
-    return tf
+    return text.count(term)
 
 class PriorityQueue:
     """
@@ -210,6 +199,14 @@ def prepruning (term):
     """
     return False
 
+
+def processTokens (tokens):
+    lowerCasedTokens = lowerCase(tokens) 
+    punctionRemovedTokens = removePunctions(lowerCasedTokens)
+    stemmedTokens = getStemmes(punctionRemovedTokens)
+    stampsRemovedTokens = preFilter(stemmedTokens)
+    othersRemovedTokens = removeOthers(stampsRemovedTokens)
+    return othersRemovedTokens
 
 if __name__ == '__main__':
     """
@@ -247,12 +244,7 @@ if __name__ == '__main__':
 
     for ti in range(0, nTexts):
         text = alltexts[ti]
-        lowerCasedTokens = lowerCase(text.tokens) 
-        punctionRemovedTokens = removePunctions(lowerCasedTokens)
-        stemmedTokens = getStemmes(punctionRemovedTokens)
-        stampsRemovedTokens = preFilter(stemmedTokens)
-        othersRemovedTokens = removeOthers(stampsRemovedTokens)
-        text.tokens = othersRemovedTokens
+        text.tokens = processTokens (text.tokens) 
     
     for term in uniqtokens:
         tfidfwriter.writerow([term])
@@ -275,7 +267,7 @@ if __name__ == '__main__':
         # post prunning
         if support < minSupport: continue
         else:
-            print [term, support, DF]
+            print term, support, DF
         '''
         if DF < minDF: continue
         if DFpercent > maxDFPercent : continue

@@ -12,10 +12,13 @@
 
 import csv
 import re
+from vectorizeTexts import *
 
 #TODO: use more elegant natural language method to extract useful words
 
-with open('./sampleData/sampled_jobs.tsv','rb') as tsvin, open('./sampleData/newJobs.csv', 'wb') as csvout:
+with open('./sampleData/sampled_jobs.tsv','rb') as tsvin,\
+        open('./sampleData/newJobs.csv', 'wb') as csvout, \
+        open('./keywords.conf', 'rb') as keywordConf:
     tsvin = csv.reader(tsvin, delimiter='\t')
     csvout = csv.writer(csvout)
 
@@ -31,16 +34,22 @@ with open('./sampleData/sampled_jobs.tsv','rb') as tsvin, open('./sampleData/new
         values.append(0)
 
     # preparation for textual discretization
-    keywords = [r'manage', r'market', r'bilingual',
-                r'computer', r'design', r'technician', r'Business',
-                r'bachelor', r'Administrative', r'programer|programming']
-    nKeywords = len(keywords)
+    keywords = []
+    for line in keywordConf:
+        line = line.strip("\n")
+        [kw, f, df] = line.split(" ")
+        keywords.append(kw)
 
-    row = header 
-    csvout.writerows([[row[0]]+ [row[2]] + row[5:9]] + row[11:])
+    nKeywords = len(keywords)
+    print "nKeywords:", nKeywords
+
+    header[-1] = header[-1].strip("\n")
+    csvout.writerows([[header[0]]+ [header[2]] + header[5:9] + header[11:] + \
+                      ["kw:"+str(x) for x in keywords]])
 
     discretSet = [2] + range(5,9) # set of index
     desIndex = 3
+    
     for row in tsvin:
         # non-textual feature
         for i in discretSet:
@@ -50,10 +59,14 @@ with open('./sampleData/sampled_jobs.tsv','rb') as tsvin, open('./sampleData/new
             row[i] = dictionaries[i][row[i]]
         # textual feature
         description = row[desIndex]
+        tokens = nltk.word_tokenize(description)
+        text = nltk.Text(tokens)
+        text.tokens = processTokens(text.tokens)
         tfeat = []
         for i in range(0, nKeywords):
-            result = re.search(keywords[i], description)
-            if result is not None:
+            
+            count = text.count(keywords[i])
+            if count >= 1:
                 tfeat.append(1)
             else:
                 tfeat.append(0)
