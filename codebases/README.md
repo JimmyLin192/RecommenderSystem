@@ -61,3 +61,9 @@ Current implementation curtail the size of keywords to be about 1700.
 1. further remove non-content-bearing high-frequency and low-frequency words 
 2. extract word phrase (consider more context, not just single word)
 3. further shrink the keywords set
+
+#TODO:
+1. merge the major
+2. apply large dataset on one-class learning
+3. employ some other better one-class learning method
+4. try some versabbi stuff: incorporate feature in the matrix factorization
