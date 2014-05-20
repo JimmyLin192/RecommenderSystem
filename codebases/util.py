@@ -40,3 +40,23 @@ def strip_escapse(string):
         tmp = tmp.strip(escape)
 
     return tmp
+
+class ProgressBar ():
+    def __init__ (self, task_size, bar_length=50):
+        self.total_length = bar_length
+        self.abs_value = 0
+        self.rel_value = 0.0
+        self.FORMAT = "%d, %d% [[%s]] \r"
+
+    def update (self, abs_value):
+        self.abs_value = abs_value
+        self.rel_value = 1.0 * abs_value / task_size
+        hash_repeat = int(self.rel_value / (100.0/bar_length))
+        whitespace_repeat = bar_length - hash_repeat
+        self.progress = "#" * repeat + "->" + " " * whitespace_repeat
+
+    def display (self):
+        string = self.FORMAT % (self.abs_value, self.rel_value, self.progress)
+        sys.stdout.write(string)
+        sys.stdout.flush()
+    

@@ -12,6 +12,7 @@
 
 import csv
 import re
+from util import *
 from vectorizeTexts import *
 
 #TODO: use more elegant natural language method to extract useful words
@@ -19,6 +20,11 @@ from vectorizeTexts import *
 with open('./sampleData/sampled_jobs.tsv','rb') as tsvin,\
         open('./sampleData/newJobs.csv', 'wb') as csvout, \
         open('./keywords.conf', 'rb') as keywordConf:
+    """
+    STEP ONE: open external file for preparation
+    """
+    numOflines = sum([1 for line in tsvin])
+    tsvin = open('./sampleData/sampled_jobs.tsv','rb')
     tsvin = csv.reader(tsvin, delimiter='\t')
     csvout = csv.writer(csvout)
 
@@ -26,45 +32,56 @@ with open('./sampleData/sampled_jobs.tsv','rb') as tsvin,\
     header = tsvin.next()
     nColumns = len(header)
 
-    # preparation for non-textual discretization
+    """
+    STEP TWO: preparation for non-textual discretization
+    """
     dictionaries = [] # dictionary for discretizing each column
     values = [] # numerical count of distinct label
     for i in range(0, nColumns):
         dictionaries.append({})
         values.append(0)
 
-    # preparation for textual discretization
+    """
+    STEP THREE: preparation for textual discretization
+    """
     keywords = []
     for line in keywordConf:
         line = line.strip("\n")
         [kw, f, df] = line.split(" ")
         keywords.append(kw)
-
     nKeywords = len(keywords)
     print "nKeywords:", nKeywords
 
+    """
+    STEP FOUR: header processing
+    """
     header[-1] = header[-1].strip("\n")
     csvout.writerows([[header[0]]+ [header[2]] + header[5:9] + header[11:] + \
                       ["kw:"+str(x) for x in keywords]])
 
-    discretSet = [2] + range(5,9) # set of index
-    desIndex = 3
+    DISCRETE_ATTR_IDX = [2] + range(5,9) # set of index of discrete attr
+    DESCRIPTION_IDX = 3 # index of job description
     
+    """
+    STEP FIVE: process job profile
+    """
+    pb = ProgressBar(numOflines, 50)    
+    index = 0
     for row in tsvin:
+        index += 1
         # non-textual feature
-        for i in discretSet:
+        for i in DISCRETE_ATTR_IDX:
             if not dictionaries[i].has_key(row[i]):
                 dictionaries[i][row[i]] = values[i]
                 values[i] += 1
             row[i] = dictionaries[i][row[i]]
         # textual feature
-        description = row[desIndex]
+        description = row[DESCRIPTION_IDX]
         tokens = nltk.word_tokenize(description)
         text = nltk.Text(tokens)
         text.tokens = processTokens(text.tokens)
         tfeat = []
         for i in range(0, nKeywords):
-            
             count = text.count(keywords[i])
             if count >= 1:
                 tfeat.append(1)
@@ -72,6 +89,10 @@ with open('./sampleData/sampled_jobs.tsv','rb') as tsvin,\
                 tfeat.append(0)
         # write to out file
         jobFeature = [row[0]]+ [row[2]] + row[5:9] + tfeat
-        print jobFeature
+        #print jobFeature
         csvout.writerows([jobFeature])
+
+        # progress bar
+        pb.update(index)
+        pb.display()
    #
