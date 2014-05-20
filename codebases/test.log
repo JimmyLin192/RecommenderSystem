@@ -1,0 +1,254 @@
+nSCSFeatures: 10
+Domain size of each variables: 
+   UserID 1
+   WindowID 1
+   State 222
+   DegreeType 7
+   Major 47072
+   WorkHistoryCount 1
+   TotalYearsExperience 1
+   CurrentlyEmployed 3
+   ManagedOthers 2
+   ManagedHowMany 1
+=========== State ===========
+ ::: 35
+Pondicherry ::: 113
+江苏省 ::: 117
+WA ::: 20
+Midi Pyrénées ::: 118
+Ήπειρος ::: 202
+Torino ::: 133
+Caserta ::: 111
+Merseyside ::: 135
+WI ::: 46
+WV ::: 21
+Pavia ::: 173
+Toledo ::: 210
+West Yorkshire ::: 209
+Kuala Lumpur ::: 180
+Rheinland-Pfalz ::: 218
+WY ::: 61
+Luik ::: 169
+Verona ::: 87
+Bretagne ::: 99
+Delhi ::: 50
+Baden-Württemberg ::: 98
+Aquitaine ::: 174
+Αττική-Αθήνα ::: 110
+West Bengal ::: 101
+Catania ::: 72
+Treviso ::: 148
+Bayern ::: 116
+RI ::: 23
+Νότιο Αιγαίο ::: 203
+Sachsen-Anhalt ::: 132
+Haute-Normandie ::: 131
+GU ::: 85
+British Columbia ::: 76
+Norfolk ::: 109
+Napoli ::: 53
+Noord-Brabant ::: 188
+Βόρειο Αιγαίο ::: 200
+Zuid-Holland ::: 140
+Cambridgeshire ::: 207
+Antrim ::: 172
+Frederiksborg ::: 92
+Oost-Vlaanderen ::: 120
+GA ::: 18
+Roma ::: 86
+Πελοπόννησος ::: 179
+Hessen ::: 104
+West Midlands ::: 108
+Skåne ::: 127
+OK ::: 25
+OH ::: 11
+Sevilla ::: 191
+Schleswig-Holstein ::: 167
+Mehedinţi ::: 144
+Durham ::: 219
+London ::: 84
+Suffolk ::: 221
+OR ::: 55
+山东省 ::: 124
+Pontevedra ::: 215
+   ::: 73
+South Humberside ::: 190
+Punjab ::: 126
+Santa Cruz de Tenerife ::: 196
+HI ::: 30
+Midlothian ::: 197
+Bihar ::: 122
+PR ::: 58
+Västerbotten ::: 175
+Singapore ::: 95
+Jharkhand ::: 208
+Bourgogne ::: 60
+East Sussex ::: 96
+PA ::: 12
+Constanţa ::: 128
+Lanarkshire ::: 170
+Κρήτη ::: 199
+Andhra Pradesh ::: 54
+Wiltshire ::: 212
+Zaragoza ::: 217
+BUCUREŞTI ::: 216
+Northumberland ::: 163
+Negeri Sembilan ::: 176
+Staffordshire ::: 93
+Johor ::: 134
+Limousin ::: 80
+Segovia ::: 66
+Maharashtra ::: 44
+广东省 ::: 138
+ME ::: 49
+MD ::: 16
+MA ::: 34
+Perugia ::: 154
+Madrid ::: 47
+MO ::: 8
+MN ::: 24
+MI ::: 19
+Essex ::: 97
+La Rioja ::: 160
+MT ::: 59
+North Yorkshire ::: 165
+Quebec ::: 42
+MS ::: 41
+Nova Scotia ::: 103
+Asturias ::: 143
+Ontario ::: 63
+Palencia ::: 157
+上海市 ::: 62
+IN ::: 22
+Jakarta Raya ::: 106
+Lorraine ::: 204
+Varese ::: 155
+Bedfordshire ::: 171
+Alberta ::: 100
+FL ::: 9
+Devon ::: 185
+NH ::: 52
+NJ ::: 1
+MAHARASHTRA ::: 151
+NM ::: 37
+Centre ::: 65
+Provence-Alpes-Côte d'Azur ::: 149
+NC ::: 10
+ND ::: 36
+NE ::: 40
+Firenze ::: 112
+Prince Edward Island ::: 181
+Assam ::: 70
+NY ::: 2
+Tamilnadu ::: 69
+Rajasthan ::: 105
+Västernorrland ::: 183
+Cagliari ::: 198
+NV ::: 31
+Groningen ::: 152
+Chieti ::: 123
+PONDICHERRY ::: 189
+Vicenza ::: 82
+CO ::: 38
+Como ::: 102
+CA ::: 0
+Milano ::: 139
+Stockholm ::: 141
+Pulau Pinang ::: 153
+Rhône-Alpes ::: 178
+Lancashire ::: 201
+Île de France ::: 71
+CT ::: 14
+Surrey ::: 77
+Karnataka ::: 88
+Kedah ::: 168
+Rogaland ::: 115
+KS ::: 39
+Uttaranchal ::: 159
+Bacãu ::: 193
+UT ::: 57
+SC ::: 5
+KY ::: 28
+Auvergne ::: 220
+SD ::: 43
+Granada ::: 195
+Haryana ::: 48
+Renfrewshire ::: 186
+DE ::: 29
+Goa ::: 146
+DC ::: 26
+Kerala ::: 45
+Jaén ::: 130
+Hedmark ::: 107
+Mantova ::: 206
+Dadra & Nagar Haveli ::: 184
+Valencia ::: 129
+Cádiz ::: 192
+Norrbotten ::: 205
+Cluj ::: 137
+West Sussex ::: 156
+Bucureşti ::: 90
+TX ::: 4
+LA ::: 3
+Prato ::: 164
+Noord-Holland ::: 214
+Braşov ::: 211
+Västra Götaland ::: 83
+Orissa ::: 177
+TN ::: 13
+Madhya Pradesh ::: 121
+Halland ::: 119
+Κεντρική Μακεδονία-Θεσσαλονίκη ::: 166
+Prahova ::: 81
+Illes Balears ::: 136
+Uttar Pradesh ::: 91
+Padova ::: 145
+VA ::: 7
+Tarragona ::: 162
+AE ::: 67
+Las Palmas ::: 161
+Chandigarh ::: 158
+VI ::: 79
+AK ::: 74
+GOA ::: 182
+AL ::: 27
+Barcelona ::: 94
+Pays De La Loire ::: 150
+AP ::: 78
+AR ::: 51
+VT ::: 6
+IL ::: 17
+Gujarat ::: 68
+IA ::: 33
+Kildare ::: 75
+AZ ::: 15
+ID ::: 32
+Tyne and Wear ::: 142
+福建省 ::: 213
+Champagne-Ardenne ::: 194
+Namen ::: 56
+Niedersachsen ::: 89
+Franche-Comté ::: 125
+Reggio Nell'Emilia ::: 147
+Selangor ::: 187
+Manitoba ::: 114
+北京市 ::: 64
+=========== DegreeType ===========
+Bachelor's ::: 2
+Master's ::: 1
+None ::: 3
+Vocational ::: 5
+PhD ::: 6
+High School ::: 0
+Associate's ::: 4
+=========== Major ===========
+Humanities & Social Services ::: 17754
+::::::::::::::::::::::::::::::
+Licensed Vocational Nurse ::: 39816
+=========== CurrentlyEmployed ===========
+ ::: 1
+Yes ::: 0
+No ::: 2
+=========== ManagedOthers ===========
+Yes ::: 1
+No ::: 0

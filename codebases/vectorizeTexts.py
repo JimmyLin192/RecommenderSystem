@@ -113,7 +113,7 @@ def preFilter(tokens):
 def getStemmes (tokens):
     stemmedTokens = []
     st = LancasterStemmer()
-    irsist = ISRIStemmer()
+    #irsist = ISRIStemmer()
     for t in tokens:
         if t in WORDS: 
             stemmedTokens.append(st.stem(t))

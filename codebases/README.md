@@ -8,10 +8,16 @@ Contributors:
 
 Overall Achievement
 ----------
-1. One class support vector machine learns the job application model with 42.5% implementation Note that this model is seriously underfitted since
-   the dimensionality extremely large, comparing to the training data.
+1. One class support vector machine learns the job application model with 42.5% implementation Note that this model is seriously underfitted since the dimensionality extremely large, comparing to the training data.
 
-Extract feature from decription of job
+Extract feature from description of Jobs
+----------
+
+
+
+
+
+Extract feature from description of Users
 ----------
 Domain size of each variables: 
 >   UserID 1
@@ -40,7 +46,7 @@ Domain size of each variables:
 2. Any better way to merge the major? to less categories may lose the
    information
 
-#Vectorize text decription of job
+##Vectorize text decription of job
 Within 2000 texts with initially over 5000 unique words
 
 1. Convert all terms into lowercase
@@ -57,13 +63,21 @@ Within 2000 texts with initially over 5000 unique words
 
 Current implementation curtail the size of keywords to be about 1700. 
 
-#How to improve?
+####How to improve?
 1. further remove non-content-bearing high-frequency and low-frequency words 
 2. extract word phrase (consider more context, not just single word)
 3. further shrink the keywords set
+
+##Merge MAJOR attribute
+1. recognize double major format
+   - by notations of / and &
+2. look up information from subject bibliographer
 
 #TODO:
 1. merge the major
 2. apply large dataset on one-class learning
 3. employ some other better one-class learning method
 4. try some versabbi stuff: incorporate feature in the matrix factorization
+
+
+
