@@ -24,11 +24,11 @@ Domain size of each variables:
 >   
 >   WindowID 1
 >   
->   State 222
+>   State 115
 >   
 >   DegreeType 7
 >   
->   Major 47072
+>   Major 1287
 >   
 >   WorkHistoryCount 1
 >   
@@ -71,7 +71,7 @@ Current implementation curtail the size of keywords to be about 1700.
 ##Merge MAJOR attribute
 1. recognize double major format
    - by notations of / and &
-2. look up information from subject bibliographer
+2. 
 
 #TODO:
 1. merge the major
