@@ -43,6 +43,7 @@ Within 2000 texts with initially over 5000 unique words
 Extract feature from description of Users
 ----------
 Domain size of each variables: 
+> 
 >   UserID 1
 >   
 >   WindowID 1
@@ -72,9 +73,15 @@ Current implementation curtail the size of keywords to be about 1700.
 ##Merge MAJOR attribute
 1. recognize double major format
    - by notations of / and &
-2. 
+2. vectorize each major by extracted keyword. The keyword extraction follows
+   the same approach with that of user description
 
 #TODO:
 1. employ some other better one-class learning method
 2. try some versabbi stuff: incorporate feature in the matrix factorization
+
+
+Versabbi Method
+-----------------
+
 
