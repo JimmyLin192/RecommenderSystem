@@ -88,3 +88,15 @@ Current implementation curtail the size of keywords to be about 1700.
 1. employ some better one-class learning method
 2. use uniform encoding scheme for state for both user and job
 3. attempt versabbi learning
+
+
+
+
+
+
+One-Class learning with different kernel
+-------------------
+
+1. In the truncated data, we found that radial kernel causes the best result.
+
+2. 
