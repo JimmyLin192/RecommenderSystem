@@ -1,0 +1,92 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%  THIS TEX FILE IS TO GENERATE PDF FILE FOR 
+%%% 
+%%%  COPYRIGHT (C) JIMMY LIN, 2013, UT AUSTIN
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[11pt,a4paper]{article}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%  PACKAGES USED IN THIS TEX SOURCE FILE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{geometry,amsthm,amsmath,graphicx,fancyheadings}
+\usepackage[colorlinks,
+            linkcolor=blue,
+            anchorcolor=red,
+            citecolor=green
+            ]{hyperref}
+\usepackage{/Users/JimmyLin/workspace/latexTemplate/UTA_CS/JS}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MACROS CONTAINING THE FILE INFORMATION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Some thoughts about Job Recommender System}
+\author{Jimmy Lin}
+\date{January 31, 2014}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% DOCUMENTATION STARTS FROM HERE 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\maketitle
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% CONTENT PAGE: TABLEOFCONTENTS, LISTOFTABLES, LIST OF FIGURES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\renewcommand{\contentsname}{Questions}
+%\begin{center} 
+%    \tableofcontents 
+    %\listoftables 
+    %\listoffigures
+%\end{center}
+%\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% GENERAL DOCUMENTATION BEGINS 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The followings are some of my thoughts in technical aspects about job
+recommender System: \\
+
+1. As to a dataset, the first thing we need to guarantee is the 
+correctness of data. From the perspective of employer, the position description may be
+precise because they want to find the most suitable person. However, some
+company may also wish to find overqualified person in the market, in a way of
+proposing high qualification in the posting.  In addition to that, from the
+standpoint of applicant, the their capabilities may be overstated out of the
+purpose of finding a better job (a job with higher salary). Thus, the
+authenticity of literal data would be a big problem.  \\
+
+2. Quatitative evaluation should be important for precise recommendation. What
+degree of mastery of JAVA is required for a company? What
+degree of JAVA is mastered by a job applicant? The degree would essentially
+influence the result of suitability evaluation. However, the difficulty exists
+in the fact that such degree cannot be measured simply through looking at the
+frequency of a word. \\
+
+3. Think about what kind of data we can derive at most? 
+
+\begin{itemize}
+    \item{a set of person profiles}
+    \item{a set of job posting from company}
+    \item{a set of job application}
+    \item{a set of job acceptance cases}
+\end{itemize}
+
+   Literally,
+
+\begin{itemize}
+    \item{Job application can only show us one applicant is interested in a position.
+   Thus, this data provides us little information about the suitability
+   between person and job. (suitability should be bi-directional preference.)}
+
+   \item{Job acceptance case can provide us some information about the suitability
+   in the sense that the job applicant is qualified and the company prefer
+   this applicant to others. But there still exists a problem: if one company
+   recruit two applicants but they have different qualification, how to
+   distinguish suitability in two cases? Note that the only ground truth provided here
+   is only about being accepted or not.}
+\end{itemize}
+
+4. Microscopically speaking, how can a computer perceive particular logic in
+job posting? For example, one company may require a programmer to possess
+master of JAVA or C++. Simple natural language processing method may perceive
+it as JAVA and C++ since both of them occur one time. Nevertheless, a person
+who has the either java or c++ skill would qualify.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% General Documentation ends
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}

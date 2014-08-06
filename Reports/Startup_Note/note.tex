@@ -1,0 +1,64 @@
+\documentclass{article}
+\usepackage{times}
+%\usepackage[T1]{fontenc}
+%\usepackage{avant}
+%\usepackage{proceed2e}
+%\usepackage{fullpage}
+
+\usepackage{epsfig, graphics}
+\usepackage{latexsym}
+\usepackage{amsmath,amssymb,amsthm,amsfonts}
+\usepackage[numbers]{natbib}
+\usepackage{algorithm,algorithmic}
+\usepackage{mathpazo}
+
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{definition}{Definition}
+
+
+\title{Recruiting Analytics}
+\date{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\renewcommand*\familydefault{\sfdefault} %% Only if the base font of the document is to be sans serif
+\newcommand{\myparagraph}[1]{{\bf \emph{#1}}.}
+\newcommand\tr[2]{\langle#1,#2\rangle}
+\newcommand\trace[1]{\text{trace}\left(#1\right)}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\begin{document}
+\maketitle
+
+\noindent
+
+The key task we are interested in is in matching people to jobs. The key entities here are (a) jobs, (b) job ads, (c) people, and (d) skills.
+
+\paragraph{Jobs}
+A job is indexed by its title, and has the following features: a list of skills, and amount of experience in these skills. Potentially, for instance as a pre-req., it could also have as feature other jobs, and amount of experience in those other jobs. The latter could also be generalized to a network/taxonomy over such jobs: this is available via governmental and other databases; e.g. Bureau of Labor Statistics. 
+
+\paragraph{Job Ads}
+A job ad can also be thought of as a \emph{variant} of a job as defined above. Thus, it is associated with a job title, and text comprising the job ad. The text consists of features associated with a job noted above:  a list of skills, and amount of experience in these skills, other jobs and amount of experience in other jobs. 
+
+\paragraph{People}
+A person has the following features:
+(a) a list of skills, a list of current/previous jobs, and duration/experience associated with previous jobs and skills;
+(b) education: school name, degree type;
+(c) other features?
+
+There are also social networks connecting people, with weighted edges.
+
+\paragraph{Skills}
+
+These are features within the entities listed above, such as jobs, and people. There could also be unobserved/latent skills that we might be able to estimate given data.
+
+\paragraph{Our Approach}
+To start with, we can model this as a recommendation system problem, similar to the Netflix Challenge. So, we observe/create a partially observed matrix, with rows as people, and columns as jobs. The entries are \emph{suitability} values that could be inferred, for instance from the experience of the person at that job. The task then, is to predict the suitability of people to jobs in entries which we have not observed.
+
+\end{document}
