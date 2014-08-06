@@ -1,4 +1,5 @@
 function [predict_label, accuracy] = oneClassSVM ()
+addpath(genpath('~/workspace/libsvm'));
 
 train_filename = './sampleData/joint_train.csv';
 test_filename = './sampleData/joint_test.csv';
@@ -7,11 +8,12 @@ test_filename = './sampleData/joint_test.csv';
 
 
 % one-class support vector machine
-model = svmtrain(train_labels, train_instances, '-s 2');
+model = svmtrain(train_labels, train_instances, '-s 2 -t 3');
 
 [predict_label, accuracy, prob_estimates] = svmpredict(test_labels, test_instances, model);
 
 predict_label
 accuracy
-
+exit
 end
+

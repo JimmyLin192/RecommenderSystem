@@ -10,10 +10,11 @@ Overall Achievement
 1. [May 4th] One class support vector machine learns the job application model with **accuracy 42.5%**. Note that this model is seriously underfitted since the dimensionality extremely large, comparing to the training data.
 
 2. [May 22nd] One class support vector machine learns the job applcation model
-   with **accuracy 56.32**. Note that in this implementation, we achieve
+   with **accuracy 56.32%**. Note that in this implementation, we achieve
    **Major Vectorization** (1287 features) and **Job Description
    Vectorization** (2600 features). Training and testing with all application
-   data in windowID=1. 
+   data in windowID=1 with about 300,000 training instances and 40,000 testing
+   instances.
 
 Extract feature from description of Jobs
 ----------
@@ -43,6 +44,7 @@ Within 2000 texts with initially over 5000 unique words
 Extract feature from description of Users
 ----------
 Domain size of each variables: 
+> 
 >   UserID 1
 >   
 >   WindowID 1
@@ -70,11 +72,31 @@ Domain size of each variables:
 Current implementation curtail the size of keywords to be about 1700. 
 
 ##Merge MAJOR attribute
-1. recognize double major format
-   - by notations of / and &
-2. 
+1. recognize double major format: by notations of / and &
+2. vectorize each major by extracted keyword. The keyword extraction follows
+   the same approach with that of user description
+3. Other possible method:
+    - **agglomerative clustering**, use vectorized data to measure proximity
+      between majors and then cluster them. This method provides us very good
+      scalability and gain any specified number of clusters. (attempt
+      different cluster proximity measure.)
+    
+4. However, since no supervision, hard to evaluate the outcome of merging.
+   One good solution is to **cross validate** on the various proximity measure.
 
 #TODO:
-1. employ some other better one-class learning method
-2. try some versabbi stuff: incorporate feature in the matrix factorization
+1. employ some better one-class learning method
+2. use uniform encoding scheme for state for both user and job
+3. attempt versabbi learning
 
+
+
+
+
+
+One-Class learning with different kernel
+-------------------
+
+1. In the truncated data, we found that radial kernel causes the best result.
+
+2. 
