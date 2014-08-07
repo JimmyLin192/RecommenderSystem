@@ -1,0 +1,29 @@
+Compile:
+
+	make
+
+Training:
+
+	./train [A] [X] [Y] [K] [lambda] (model)
+	
+	min_{U,V} (1-alpha)* sum_{A_ij=1} (x_i'UV'y_j - 1)^2
+	              alpha* sum_{A_ij=0} (x_i'UV'y_j - 0)^2 + lambda/2*(|U|_F^2 + |V|_F^2)
+	A: n1*n2
+	X: n1*d1
+	Y: n2*d2
+	U: d1*K
+	V: d2*K
+
+Example:
+
+	./train A X Y 2 0.01 model
+
+
+Prediction:
+	
+	./predict [X] [Y] [model] [top#] [pred_file]
+	
+	[pred_file] will contain ranking list of [top#] items in [Y] for each instance in [X] (with score).
+
+Example:
+	./predict X Y model 3 pred_rank
