@@ -9,16 +9,16 @@ SRC_DIR = "$(shell pwd)"
 
 DERIVATIVES = $(shell ls *.aux *.log *.out texput.log *.toc *.lot *.lof)
 
-all: clean generate clean
+all: generate 
 	
-generate: main.tex
-	pdflatex $(SRC_DIR)/main 
-	biblatex $(SRC_DIR)/main
-	pdflatex $(SRC_DIR)/main 
-	pdflatex $(SRC_DIR)/main 
+generate: main.tex main.bib
+	latex $(SRC_DIR)/main 
+	bibtex $(SRC_DIR)/main
+	latex $(SRC_DIR)/main 
+	latex $(SRC_DIR)/main 
 
 push:  clean
-	git add main.tex main.pdf
+	git add main.tex main.pdf main.bib Makefile
 	git commit -m "update on tex file"
 	git push
 

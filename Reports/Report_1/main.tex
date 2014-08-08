@@ -1,11 +1,12 @@
 \documentclass{article} % For LaTeX2e
 \usepackage{nips14submit_e,times}
+\usepackage{cite}
 \usepackage{hyperref}
 \usepackage{url}
 %\documentstyle[nips14submit_09,times,art10]{article} % For LaTeX 2.09
 
 
-\title{Project Report: User-Job Suitability Measurement System}
+\title{Project Report: User-Job Suitability Measurement}
 
 
 \author{
@@ -83,14 +84,22 @@ Collaborative filtering.
 % 2.2 latent factor model
 \subsubsection{Features-incorporated Matrix Completion}
 % 3.1 dhillon's paper: inductive matrix completion
-A recently emerging paper proposes an inductive matrix completion method, in
-which features of items are considered while completing matrices. Such feature
-incorporation method for collaborative filtering approach in a way that
-it could address more sparse matrices. From this perspective, we can see it as
-a new approach that incorporates advantages from both collaborative filtering and
-content-based filtering. 
+A recently emerging paper proposed an inductive matrix completion method, in
+which features of items are considered while completing matrices. 
+According to \cite{IMC}, this feature incorporation method can be explained as a way to
+provide additional support for sparse matrices. 
+From this perspective, we can see it as a new approach that incorporates
+advantages from both collaborative filtering and content-based filtering. 
 
 % 3.2 propose kernel-based inductive matrix completion?
+One possible enhancement for above inductive matrix completion is to
+extend the linear association between features and
+latent factors to an version that accepts non-linear association. Intuitively,
+we can name this approach as {\it kernel-based} inductive matrix completion.
+By considering non-linear relations between designed features and hidden
+topics (shared latent factors), the space of latent factors can be largely
+expanded and then it would be more likely to automatically detect latent
+factors with higher quality. 
  
 
 \subsection{Suitability Measurement with Prerequisites}
@@ -106,7 +115,8 @@ content-based filtering.
 
 
 \subsubsection*{References}
-
+\bibliography{main.bib}{}
+\bibliographystyle{plain}
 
 
 \end{document}
