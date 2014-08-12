@@ -1,7 +1,8 @@
 \documentclass{article} % For LaTeX2e
 \usepackage{nips14submit_e,times}
 \usepackage{cite}
-\usepackage{url,graphicx}
+\usepackage{enumitem}
+\usepackage{url,graphicx,amsmath}
 %\documentstyle[nips14submit_09,times,art10]{article} % For LaTeX 2.09
 \usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
 
@@ -57,6 +58,15 @@ Austin, TX 78705 \\
 \begin{abstract}
     Abstract here.
 \end{abstract}
+
+% DONE LIST:
+% 1. add description for each feature of user, job and application
+% 2. apply inductive matrix completion (new) on job recommendation problem
+% 3. compare IMC with old approaches, i.e. nearest neighbour and SVM.
+% 4. discuss further enhancement of job recommender system.
+
+% GENERALIZATION LIST:
+
 
 \section{Introduction}
 
@@ -157,8 +167,8 @@ Recommendation Challenge posted on
 provider of this dataset is
 \href{http://www.careerbuilder.com/}{CareerBuilder.com}, one of the biggest
 job recommendation service providers. This particular dataset, sized of several
-Gigabytes, contains a collection of featured users, a collection of
-characterized jobs and a series of application records that are divided into
+Gigabytes, contains 389,708 featured users, 1,092,096
+characterized jobs and 1,603,111 application records that are divided into
 training and testing split.  In this section, we will at first provide the
 fundamental introduction to these three basic elements: User, Job,
 Application. And then explanation are illustrated about temporal separation (concept of
@@ -210,8 +220,8 @@ Besides, {\it StartDate} and {\it EndDate} shows the timing information of one j
 i.e. on which day it starts and ends. 
 
 % show details each record of application
-As to each piece of application history record, the dataset contains information
-about the UserID, WindowID, Split, ApplicationDate, and finally JobID. 
+As to each instanced record of application, the dataset contains information
+about the UserID, WindowID, Split, ApplicationDate, and JobID. 
 {\it UserID} is indexing number of the user who applied for particular job,
 indexed by {\it JobID}. 
 {\it WindowID} implies the timing period of that application event, while
@@ -220,12 +230,12 @@ And {\it Split} labelled in which division (training or testing set) that
 piece of application was placed.
 
 % explain the window ID
-In outline, the data on users, job postings, and job applications that
-users have made to job postings is provided. In total, the applications span
-13 weeks. All the job applications are split into 7 groups, each group
-representing a 13-day window. Each 13-day window is split into two parts: The
-first 9 days are the training period, and the last 4 days are the test period.
-The graphical representation demonstrating such splits is illustrated below.
+Next presented was the overall explanation about timing design of dataset. In
+outline, all application instances span 13 weeks. All the job applications are
+split into 7 groups, with each group representing a 13-day window. Each 13-day
+window is split into two parts: The first 9 days are the training period, and
+the last 4 days are the test period. The graphical representation
+demonstrating such splits is illustrated below.
 \begin{figure}[h]
     \begin{center}
         \includegraphics[width=4.3in,height=1.4in]{./fig/datalayout.png}
@@ -234,21 +244,20 @@ The graphical representation demonstrating such splits is illustrated below.
 \end{figure}
 
 Note that each user and each job posting is randomly assigned to exactly one window.
+Each job is assigned to a window with probability proportional to the time it
+was live on the site in that window. Each user is assigned to a window with
+probabilty proportional to the number of applications they made to jobs in
+that window. As shown in the figure below, User1 only made submissions to jobs in
+Window 1, and so was assigned to Window 1 with probability 100\%. User2,
+however, made submissions to jobs in both Window 1 and Window 2, and so may
+have been assigned to either Window1 or Window2.
 
 \begin{figure}[h]
     \begin{center}
         \includegraphics[width=4.3in,height=1.8in]{./fig/assignusertowindows.png}
-        \caption{}
+        \caption{Explanation for user distribution}
     \end{center}
 \end{figure}
-
-Each job is assigned to a window with probability proportional to the time it
-was live on the site in that window. Each user is assigned to a window with
-probabilty proportional to the number of applications they made to jobs in
-that window. In the above image, User1 only made submissions to jobs in
-Window 1, and so was assigned to Window 1 with probability 100\%. User2,
-however, made submissions to jobs in both Window 1 and Window 2, and so may
-have been assigned to either Window1 or Window2.
 
 In each window, all the job applications that users in that window made to
 jobs in that window during the 9-day training period. 
@@ -262,28 +271,92 @@ users applied for during the window's test period. Note that users may have
 applied to jobs from other windows as well, but the only thing needed to be
 predicted is which jobs they applied to in their own windows.
 
-
-
-% some key observation from dataset
+% TODO:some key observation from dataset
 
 \subsection{Preprocessing} % ways to preprocessing
+Preprocessing, as the earliest step for any machine learning
+experimentation, is extremely important in that it, as a role of filter, 
+process the raw data and then generates what is later employed by human-design
+AI system. From this perspective, any inconsistent or invalid processing would
+cause devastating effects for the entire system.
 
-%  our practical part
-Out of computational convenience, only the first part of dataset (WindowsID =
-1) are involved in our experiment.
+% 0. instance subsetting
+{\bf Instance Subsetting}.
+Since there are huge quantities of users and jobs, our experiment only
+exploits the first part of dataset (WindowsID = 1) for computational
+convenience. Another benefit for such instance subsetting is to temporarily
+put aside the temporal dynamics, that is, disregard the influence of timing
+variable for now. And we can investigate how to accommodate the designed system
+to the entire dataset later.
 
+% 1. binary encoding of discrete value
+{\bf Binary Encoding}.
+For all nominal features, we represent each of them as a series of binary
+variables. For example, DegreeType, indicating the highest
+degree obtained by one user, has five possible values: None, High
+School, Bachelor, Master, PhD. We have five binary variables indicating if one
+user has highest degree on None, High School, Bachelor, Master, PhD
+respectively. 
+The goodness of such processing was brought into light when it comes to
+Major feature. Some people may be double-major or even three-major. 
+In these cases, no conflict would occur if we take binary encoding approaches.
+% TODO: example nominal features
 
+% 2. feature subsetting (user, job, application)
+{\bf Feature Subsetting}.
+To simplify initial setup of this machine learning experimentation, we
+manually left out some semantically meaningless information and those features
+that may contribute to application prediction (slightly higher accuracy) but
+overwhelmingly enlarge the scale of learning (significantly lower speed).
+Hence, we truncated the total set of features, including . 
+% TODO: what features do you leave out
 
-\subsection{Traditional binary classifier}
+% 3. processing textual data (description, requirements)
+%% (present procedure)
+{\bf Efficient Representation of Textual Data}.
+The ways to process textual data are important because we hope to narrow the
+scale of numerical representation for these texts.  The sequential procedures
+of processing raw text data are specified as follows:
+\begin{enumerate}[label=(\roman*)]
+  \item{Convert all terms into lowercase.}
+  \item{Eliminate stop words.}
+  \item{Annihilate all meaningless terms with particular forms, i.e.
+          timestamps, datestamps, IP addresses, phone numbers and webpage link}
+  \item{Remove all punctuations.}
+  \item{Check validity of words.}
+  \item{Acquires linguistic stemmes for each tokens. This step also removes
+          plurals and tenses.}
+\end{enumerate}
+%% (present statistics of product)
+As a consequence of applying above transformations, we gain the . 
+% TODO: how many key words
+
+% 4. data format of preprocessing product 
+{\bf Format of Products}.
+All numerics generated by preprocessing procedure are restored as libSVM
+format in that the generated features for user and job have huge extent of sparsity. 
+Specifically, for every instance of job or user, its representation is as
+follows:
+
+\begin{center}
+    feature\_index:feature\_value \ feature\_index:feature\_value .... 
+\end{center}
+
+\subsection{Failure of Traditional Binary Classifiers} % 0.5 - 1 page
+1. Logistic Regression.
+
+2. Simple matrix factorization. latent topic model 
+
+\subsection{Nearest Neighbour Classifier} % 0.5-1 page
 feature-based nearest neighbour model. behavior-based nearest neighbour model
 not available.
 
-\subsection{One-class learning solver (SVM)}
+\subsection{One-class learning solver (SVM)} % 0.5-1 page
+One idea is to construct uniform data description over highly associated
+user-job pair. To make it more specific, the high association here can be
+viewd as application potential in our experiment.
 
-\subsection{Simple matrix factorization}
-Alternating least square
-
-\subsection{Inductive Matrix Completion}
+\subsection{Inductive Matrix Completion} % 1-2 pages
 
 % \subsection{ (optional) kernelized inductive matrix completion}
 
