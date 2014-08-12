@@ -50,7 +50,9 @@ class ProgressBar ():
         self.rel_value = 0.0
         self.task_size = task_size
         self.bar_length = bar_length
-        self.FORMAT = "%d, %d%% [[%s]] \r"
+        self.FORMAT = "%10d, %3d%% [[%s]]"
+        self.INPROGRESS = self.FORMAT + " In Progress \r"
+        self.FINISHED = self.FORMAT + " Completed! \n"
 
     def update (self, abs_value):
         self.abs_value = abs_value
@@ -60,7 +62,10 @@ class ProgressBar ():
         self.progress = "#" * hash_repeat + "->" + " " * whitespace_repeat
 
     def display (self):
-        string = self.FORMAT % (int(self.abs_value), int(self.rel_value), self.progress)
+        string = self.INPROGRESS % (self.abs_value, int(self.rel_value), self.progress)
         sys.stdout.write(string)
         sys.stdout.flush()
+        if self.abs_value == self.task_size:
+            finished = self.FINISHED % (self.task_size, 100, self.progress)
+            sys.stdout.write(finished)
     
