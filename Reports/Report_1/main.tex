@@ -1,13 +1,11 @@
 \documentclass{article} % For LaTeX2e
 \usepackage{nips14submit_e,times}
 \usepackage{cite}
-\usepackage{hyperref}
-\usepackage{url}
+\usepackage{url,graphicx}
 %\documentstyle[nips14submit_09,times,art10]{article} % For LaTeX 2.09
-
+\usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
 
 \title{Project Report: User-Job Suitability Measurement}
-
 
 \author{
 XIN LIN \\
@@ -73,49 +71,228 @@ for the job positions with higher salaries and correspongly much more
 capability seeking.
 
 \subsection{Suitability Measurement As Matrix Completion}
-\subsubsection{Failure of traditional binary classifier}
+% explain binary suitability measurement
+For startup, we first focus on binary suitability measurement problem. That
+is, we only investigate the binary association, suitable (1) or not suitable
+(0), for each pair of user and job. 
+% Failure of traditional binary classifier
+At first glance, this problem can be naively solved by traditional binary
+classifiers, e.g. logistic regression and support vector machine, or one-class
+learning solvers (or data description techniques).
+Nevertheless, more carefull examination reveals obvious disadvantage of such
+treatment. The main drawback of using traditional binary classifier is that.
+% explain matrix completion formulation TODO
 
 \subsubsection{Content-based Filtering}
 
 \subsubsection{Collaborative Filtering}
-Nearest neighbour method and latent factor model are two major models for
-Collaborative filtering.
-% 2.1 nearest neighbour method
-% 2.2 latent factor model
+The developing motivation of {\it Collaborative Filtering} is that the
+profiles of items or users are not always available or poorly collect in
+some settings. Instead, the past histories of user-item association, also called {\it
+    explicit feedback}, are easy to obtain.  
+
+Nearest neighbour method and latent factor model are two major approaches for
+Collaborative Filtering.
+% 2.1 nearest neighbour method TODO
+
+
+% 2.2 latent factor model TODO
+This model has an underlying assumption: the real exact rating matrix are
+low-rank matrix.   
+Stochastic Gradient Descent and Alternating Least Square are two main
+approaches to numerically achieve matrix completion task of this category.
+
+In netflix prize, the latent factor model, combined with temporal dynamics and
+bias evaluation, became a single model with the greatest prediction power.
+
+% 2.3 weakness 
+However, collaborative filtering fails to provide supervision of missing
+values when only rare amount of previous association histories are provided,
+especailly when the systems are on its early stage.
+This is commonly referred to as {\it cold startup} problem.
+
 \subsubsection{Features-incorporated Matrix Completion}
 % 3.1 dhillon's paper: inductive matrix completion
-A recently emerging paper proposed an inductive matrix completion method, in
+A recently emerging paper proposed an {\it Inductive Matrix Completion} method, in
 which features of items are considered while completing matrices. 
-According to \cite{IMC}, this feature incorporation method can be explained as a way to
-provide additional support for sparse matrices. 
+According to \cite{jain2013provable}, this feature incorporation method can be
+explained as a way to provide additional support for sparse matrices. 
 From this perspective, we can see it as a new approach that incorporates
 advantages from both collaborative filtering and content-based filtering. 
+A more recent paper \cite{natarajan2014inductive} in bioinformatics 
+demonstrated successful application of inductive matrix completion on
+gene-disease analytics.
 
 % 3.2 propose kernel-based inductive matrix completion?
 One possible enhancement for above inductive matrix completion is to
-extend the linear association between features and
-latent factors to an version that accepts non-linear association. Intuitively,
-we can name this approach as {\it kernel-based} inductive matrix completion.
-By considering non-linear relations between designed features and hidden
+extend our consideration from the linear association between features and
+latent factors to an version that accepts non-linear association.
+By this intuition, we can name this approach as 
+    {\it Kernel-based Inductive Matrix Completion}.
+By taking into account non-linear relations between designed features and hidden
 topics (shared latent factors), the space of latent factors can be largely
 expanded and then it would be more likely to automatically detect latent
 factors with higher quality. 
  
+%\subsection{Scored Suitability Measurement (Multi-valued Version)}
+%% this can also be used as a way of 
+%A more elegant way to measure suitability between users and jobs is to
+%directly predict scores based knowns. 
 
 \subsection{Suitability Measurement with Prerequisites}
 1. simulate course recommendaiton (by adita)
 
-\subsection{}
+\section{Experiments: Application Prediction}
+% introduce problem and evaluation criteria
+Due to limitation of acquired data, our first experiment is oriented to
+problem of application prediction. Specifically, given a set of featured users
+and featured jobs, the designed system should predict whether one user will
+apply for one particular job.
 
-\subsection{}
+\subsection{Dataset}
+% introduce experimented data set
+The dataset utilized in this experimental project comes from a Job
+Recommendation Challenge posted on
+\href{http://www.kaggle.com/c/job-recommendation/data}{Kaggle.com}. The
+provider of this dataset is
+\href{http://www.careerbuilder.com/}{CareerBuilder.com}, one of the biggest
+job recommendation service providers. This particular dataset, sized of several
+Gigabytes, contains a collection of featured users, a collection of
+characterized jobs and a series of application records that are divided into
+training and testing split.  In this section, we will at first provide the
+fundamental introduction to these three basic elements: User, Job,
+Application. And then explanation are illustrated about temporal separation (concept of
+window) and designed distribution for user, job and application. 
 
-\section{Experiments}
-\subsection{Application Prediction}
-2. suitability problem 
+% show details each record of user
+As the most essential component of job recommendation system, users are
+recorded by UserID, WindowID, Split, City, State, Country, ZipCode,
+DegreeType, Major, GraduationDate, WorkHistoryCount,
+TotalYearsExperience, CurrentlyEmployed, ManagedOthers, ManagedHowMany.
+{\it UserID} refers to the nubmering index of that indicated user.  
+{\it WindowsID} is about the timing period in which this particular
+applicaiton about user happened. 
+{\it City, State, Country, and ZipCode} are related to the living place of
+that user. 
+What follows are the achievements in school. 
+{\it DegreeType} shows the highest degree that user has gained from school,
+{\it Major} presents the field of his/her speciality and 
+{\it GraduationDate} reveals when he/she gained the highest degree.
+Working and management experience comes next.
+{\it WorkHistoryCount} represents how many previous jobs one has had and
+{\it TotalYearsExperience} represents how many years one has been involved in
+occupation. 
+{\it CurrentlyEmployed} and {\it ManagedOthers} are both binary values,
+indicating whether one was currently on his/her job and whether he has been in
+certain management position. 
+{\it ManagedHowMany} implies his management power and capability, that is, the maximum number
+of people he/she has managed before.
+
+% show details each record of job
+When it comes to information of every individual job, fields like JobID,
+WindowID, Title, Description, Requirements, City, State, Country, Zip5,
+StartDate, EndDate are provided.
+{\it JobID} is the identifying number for each particular job. 
+{\it WindowID} captures the same semantics as it is in a user record --
+involved timing period of one job.
+{\it Title} is the name of position sepcified by corresponding corporation, which
+can be significantly important since it reflects relative position and power
+in one company's hierarchy. 
+Description and Requirements are both textual characterization
+over each particular job. 
+{\it Description} provides a
+characteristic overview of one particular job. 
+{\it Requirements} can be
+viewed the basic expectation of hiring company towards the job applicants.
+Similarly to the record of each individual user, every job also has location
+information, such as {\it City, State, Country, ZipCode}. 
+Besides, {\it StartDate} and {\it EndDate} shows the timing information of one job,
+i.e. on which day it starts and ends. 
+
+% show details each record of application
+As to each piece of application history record, the dataset contains information
+about the UserID, WindowID, Split, ApplicationDate, and finally JobID. 
+{\it UserID} is indexing number of the user who applied for particular job,
+indexed by {\it JobID}. 
+{\it WindowID} implies the timing period of that application event, while
+{\it ApplicationDate} presents the specific date of application event. 
+And {\it Split} labelled in which division (training or testing set) that
+piece of application was placed.
+
+% explain the window ID
+In outline, the data on users, job postings, and job applications that
+users have made to job postings is provided. In total, the applications span
+13 weeks. All the job applications are split into 7 groups, each group
+representing a 13-day window. Each 13-day window is split into two parts: The
+first 9 days are the training period, and the last 4 days are the test period.
+The graphical representation demonstrating such splits is illustrated below.
+\begin{figure}[h]
+    \begin{center}
+        \includegraphics[width=4.3in,height=1.4in]{./fig/datalayout.png}
+        \caption{Illustrating Diagram for Temporal Separation of the Dataset}
+    \end{center}
+\end{figure}
+
+Note that each user and each job posting is randomly assigned to exactly one window.
+
+\begin{figure}[h]
+    \begin{center}
+        \includegraphics[width=4.3in,height=1.8in]{./fig/assignusertowindows.png}
+        \caption{}
+    \end{center}
+\end{figure}
+
+Each job is assigned to a window with probability proportional to the time it
+was live on the site in that window. Each user is assigned to a window with
+probabilty proportional to the number of applications they made to jobs in
+that window. In the above image, User1 only made submissions to jobs in
+Window 1, and so was assigned to Window 1 with probability 100\%. User2,
+however, made submissions to jobs in both Window 1 and Window 2, and so may
+have been assigned to either Window1 or Window2.
+
+In each window, all the job applications that users in that window made to
+jobs in that window during the 9-day training period. 
+And with each window, users have been split into two groups, {\it Test group}
+and {\it Train group}. The Test users are those who made 5 or more
+applications in the 4-day test period, and the Train users are those who did
+not.
+
+For each window, the task of prediction is which jobs in that window the Test
+users applied for during the window's test period. Note that users may have
+applied to jobs from other windows as well, but the only thing needed to be
+predicted is which jobs they applied to in their own windows.
 
 
-\subsubsection*{References}
-\bibliography{main.bib}{}
+
+% some key observation from dataset
+
+\subsection{Preprocessing} % ways to preprocessing
+
+%  our practical part
+Out of computational convenience, only the first part of dataset (WindowsID =
+1) are involved in our experiment.
+
+
+
+\subsection{Traditional binary classifier}
+feature-based nearest neighbour model. behavior-based nearest neighbour model
+not available.
+
+\subsection{One-class learning solver (SVM)}
+
+\subsection{Simple matrix factorization}
+Alternating least square
+
+\subsection{Inductive Matrix Completion}
+
+% \subsection{ (optional) kernelized inductive matrix completion}
+
+\section{Experiments: Suitability Evaluation}
+We now start to divert our focus on investigating Application Potential to
+Suitability Evaluation.
+
+%\subsubsection*{References}
+\bibliography{main}{}
 \bibliographystyle{plain}
 
 

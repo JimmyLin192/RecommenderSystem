@@ -7,15 +7,15 @@
 
 SRC_DIR = "$(shell pwd)"
 
-DERIVATIVES = $(shell ls *.aux *.log *.out texput.log *.toc *.lot *.lof)
+DERIVATIVES = $(shell ls *.aux *.log *.out texput.log *.toc *.lot *.lof *.dvi *.bbl *.blg)
 
 all: generate 
 	
 generate: main.tex main.bib
-	latex $(SRC_DIR)/main 
-	bibtex $(SRC_DIR)/main
-	latex $(SRC_DIR)/main 
-	latex $(SRC_DIR)/main 
+	pdflatex main 
+	bibtex main
+	pdflatex main 
+	pdflatex main 
 
 push:  clean
 	git add main.tex main.pdf main.bib Makefile
