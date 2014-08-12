@@ -25,6 +25,7 @@ def preprocessing (major):
     major = major.replace(".", " ")
     major = major.replace("/", " ")
     lowcase_major = major.lower()
+    
     separated_majors = lowcase_major.split(" ")
     return separated_majors
 
@@ -53,8 +54,8 @@ def vectorize_major(major_dict):
     return final_dict
 
 
-with open('./../Dataset/users.tsv','rb') as tsvin, \
-        open('./sampleData/newUsers.csv', 'wb') as csvTrainOut, \
+with open('../../Dataset/users.tsv','rb') as tsvin, \
+        open('./newUsers.csv', 'wb') as csvTrainOut, \
         open('./process_users.log', 'wb') as log:
 
     original = sys.stdout

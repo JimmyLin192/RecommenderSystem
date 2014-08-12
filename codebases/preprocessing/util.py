@@ -11,6 +11,7 @@
 ############################################################
 
 from HTMLParser import HTMLParser
+import sys
 
 class MLStripper(HTMLParser):
 	def __init__(self):
@@ -25,9 +26,10 @@ def strip_tags(htmlstr):
     """
     Remove all html tags
     """
-	s = MLStripper()
-	s.feed(htmlstr)
-	return s.get_data()
+
+    s = MLStripper()
+    s.feed(htmlstr)
+    return s.get_data()
 
 def strip_escapse(string):
     """
@@ -46,17 +48,19 @@ class ProgressBar ():
         self.total_length = bar_length
         self.abs_value = 0
         self.rel_value = 0.0
-        self.FORMAT = "%d, %d% [[%s]] \r"
+        self.task_size = task_size
+        self.bar_length = bar_length
+        self.FORMAT = "%d, %d%% [[%s]] \r"
 
     def update (self, abs_value):
         self.abs_value = abs_value
-        self.rel_value = 1.0 * abs_value / task_size
-        hash_repeat = int(self.rel_value / (100.0/bar_length))
-        whitespace_repeat = bar_length - hash_repeat
-        self.progress = "#" * repeat + "->" + " " * whitespace_repeat
+        self.rel_value = 100.0 * abs_value / self.task_size
+        hash_repeat = int(self.rel_value / (100.0/self.bar_length))
+        whitespace_repeat = self.bar_length - hash_repeat
+        self.progress = "#" * hash_repeat + "->" + " " * whitespace_repeat
 
     def display (self):
-        string = self.FORMAT % (self.abs_value, self.rel_value, self.progress)
+        string = self.FORMAT % (int(self.abs_value), int(self.rel_value), self.progress)
         sys.stdout.write(string)
         sys.stdout.flush()
     
