@@ -18,7 +18,7 @@ generate: main.tex main.bib
 	pdflatex main 
 
 push:  clean
-	git add main.tex main.pdf main.bib Makefile
+	git add main.tex main.pdf main.bib Makefile fig
 	git commit -m "update on tex file"
 	git push
 
