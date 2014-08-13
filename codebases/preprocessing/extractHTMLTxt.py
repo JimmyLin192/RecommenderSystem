@@ -1,3 +1,4 @@
+#!/usr/bin/python2.7
 ############################################################
 ##  FILENAME:   extractHTMLTxt.py    
 ##  VERSION:    1.0
@@ -15,17 +16,22 @@ import sys
 from HTMLParser import HTMLParser
 from util import *
 
-if __name__ == '__main__':
-with open(sys.argv[1]) as input:
-	text = zip(*(line.strip().split('\t') for line in input))
+inFile = sys.argv[1]
 
+with open(inFile) as input:
+	text = zip(*(line.strip().split('\t') for line in input))
 	text = text[3]
 	text = text[1:len(text)-1]
 	#print text
 
 output = ["" for n in range(len(text))]
+output_file = open('htmls.' + inFile , 'w')
 
-for i in range (0, len(text)-1):
+nTexts = len(text)
+print "nTexts (nJobs): ", nTexts
+pb = ProgressBar(nTexts, 50)    
+
+for i in range (0, nTexts-1):
     try:
         output[i] = strip_tags(text[i])
     except:
@@ -35,7 +41,7 @@ for i in range (0, len(text)-1):
 		output[i] = output[i].replace(word, "")
 
 	print output[i]
+	output_file.write("%s\n" % output[i])
 
-output_file = open('output_file', 'w')
-for item in output:
-	output_file.write("%s\n" % item)
+    pb.update(i)
+    pb.display()
