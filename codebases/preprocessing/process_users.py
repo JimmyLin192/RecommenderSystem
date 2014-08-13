@@ -54,15 +54,19 @@ def vectorize_major(major_dict):
      
     return final_dict
 
-
+'''
+    main function
+'''
 with open('../../Dataset/users.tsv','rb') as tsvin, \
-        open('./win1_Users.sparse', 'wb') as csvTrainOut, \
+        open('./win1_Users.sparse', 'wb') as userSparseOut, \
+        open('./win1_Users.index', 'wb') as userIndexOut, \
         open('./process_users.log', 'wb') as log:
 
     original = sys.stdout
     sys.stdout = log
     tsvin = csv.reader(tsvin, delimiter='\t')
-    csvTrainOut = csv.writer(csvTrainOut, delimiter=' ')
+    userSparseOut = csv.writer(userSparseOut, delimiter=' ')
+    userIndexOut = csv.writer(userIndexOut, delimiter=' ')
     header = tsvin.next()
     nColumns = len(header)
     """
@@ -98,6 +102,7 @@ with open('../../Dataset/users.tsv','rb') as tsvin, \
     SCSUsers = [] # users matrix by simple coding scheme
     BCSUsers = [] # users matrix by binary coding scheme
     newheader = [header[i] for i in remainedSet]
+    INDEX_IDX = 0
     MAJOR_IDX = 8
 
     for user in tsvin:
@@ -122,12 +127,10 @@ with open('../../Dataset/users.tsv','rb') as tsvin, \
     """
     STEP: MERGE MAJOR
     """
-    keywords_dict = vectorize_major(dictionaries[MAJOR_IDX])
-    values[MAJOR_IDX] = len(keywords_dict.keys())
+    major_keywords_dict = vectorize_major(dictionaries[MAJOR_IDX])
+    values[MAJOR_IDX] = len(major_keywords_dict.keys())
     nSCSFeatures = len(SCSUsers[0])
     print "nSCSFeatures:", nSCSFeatures
-    for item in keywords_dict.items():
-        print item
     
     print "Domain size of each variables: "
     newheader = []
@@ -136,6 +139,9 @@ with open('../../Dataset/users.tsv','rb') as tsvin, \
         if values[i] <= 0: values[i] = 1
         print "  ", header[i], values[i]
         newheader = newheader + [header[i]] * values[i]
+
+    for item in major_keywords_dict.items():
+        print item
 
     """
     STEP: output the accumulated counter
@@ -158,15 +164,19 @@ with open('../../Dataset/users.tsv','rb') as tsvin, \
     
     '''
     ## HEADER FORMULATION
-    csvTrainOut.writerows([newheader])
+    userSparseOut.writerows([newheader])
     '''
     nBCSFeatures = None
     st = LancasterStemmer()
 
     for scsUser in SCSUsers:
         acc_index = 0
-        bcsUser = [] # new user vector in binary coding scheme
+        bcsUser = [] # new sparse user vector in binary coding scheme
         for i in range(nSCSFeatures):
+            if i == INDEX_IDX:
+                # output USERID in separate file: win1_Users.index
+                userIndexOut.writerows([[scsUser[i]]])
+                continue
             if i in removeSet: 
                 # ignore feature to be removed
                 continue
@@ -177,14 +187,14 @@ with open('../../Dataset/users.tsv','rb') as tsvin, \
                     sep_majors = preprocessing(scsUser[MAJOR_IDX])
                     for sep_major in sep_majors:
                         word = st.stem(sep_major)
-                        if keywords_dict.has_key(word):
-                            index = acc_index + keywords_dict[word]
+                        if major_keywords_dict.has_key(word):
+                            index = acc_index + major_keywords_dict[word]
                             bcsUser.append(str(index)+":"+str(1))
                 else:
                     index = acc_index + scsUser[i]
-                    bcsUser.append(str(index)+":"+str(scsUser[i]))
+                    bcsUser.append(str(index)+":"+str(1))
                 acc_index += values[i]
-            else: #
+            else: # non-norminal set
                 if scsUser[i] > 0:
                     index = acc_index 
                     bcsUser.append(str(index)+":"+str(scsUser[i]))
@@ -194,7 +204,7 @@ with open('../../Dataset/users.tsv','rb') as tsvin, \
             nBCSFeatures = len(bcsUser)
             print "nBCSFeatures (total):", nBCSFeatures
         ## output to external csv, piece by piece
-        csvTrainOut.writerows([bcsUser])
+        userSparseOut.writerows([bcsUser])
 
         pb_index += 1
         pb.update(pb_index)
