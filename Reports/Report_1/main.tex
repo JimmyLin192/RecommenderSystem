@@ -56,7 +56,31 @@ Austin, TX 78705 \\
 \maketitle
 
 \begin{abstract}
-    Abstract here.
+
+% Motivation
+The essential part of job recommendation system is to evaluate suitability
+between job seekers and available positions. However, currently popular job search
+engines or job recommender systems online are weakly capable of providing
+recommendation in intelligent ways. 
+% overall formulation
+This project formulates suitability
+evaluation problem as an complicated system that prototyped from application
+prediction and then transfer its power to suitability evaluation. 
+% our contribution
+For the the naive prototype, we apply recently emerged Inductive Matrix
+Completion on task of predicting job seekers' application behavior. This new
+approach significantly outshines other classic treatments. 
+% dicussion section
+Our discussion section at the end aims at giving several possible directions
+of system extension in the future.
+ 
+% For problem of application prediction:
+%    0. inability of traditional binary classifier
+%    1. demonstrate result of Inductive Matrix Completion 
+%    2. compare it to other method - NN, one-class solver
+
+% Discussion over how to augment this system
+
 \end{abstract}
 
 % TODO LIST:
@@ -385,7 +409,13 @@ user-job pair. To make it more specific, the high association here can be
 viewd as application potential in our experiment.
 
 \subsection{Inductive Matrix Completion} % 1-2 pages
-For now we come to the most important part of this.
+As previously mentioned, a recently emerged approach, named inductive matrix
+completion, gained great success on recommendation task when side information
+of users and items(in this case, jobs) are available. According to the
+published paper \cite{jain2013provable}, one should be able to predict
+inductively on new users/jobs. Unlike standard matrix
+completion, in this setting.
+
 
 % \subsection{ (optional) kernelized inductive matrix completion}
 
