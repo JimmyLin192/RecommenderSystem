@@ -2,6 +2,8 @@
 \usepackage{nips14submit_e,times}
 \usepackage{cite}
 \usepackage{enumitem}
+\usepackage{algorithm,algorithmicx}
+\usepackage[noend]{algpseudocode}
 \usepackage{url,graphicx,amsmath}
 %\documentstyle[nips14submit_09,times,art10]{article} % For LaTeX 2.09
 \usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
@@ -109,7 +111,7 @@ little support from practical analysis, in the sense that people tend to apply
 for the job positions with higher salaries and correspongly much more
 capability seeking.
 
-\subsection{Suitability Measurement As Matrix Completion}
+\subsection{Standarded Matrix Completion}
 % explain binary suitability measurement
 For startup, we first focus on binary suitability measurement problem. That
 is, we only investigate the binary association, suitable (1) or not suitable
@@ -139,7 +141,7 @@ Collaborative Filtering.
 This model has an underlying assumption: the real exact rating matrix are
 low-rank matrix.   
 Stochastic Gradient Descent and Alternating Least Square are two main
-approaches to numerically achieve matrix completion task of this category.
+approaches to numerically solve matrix completion task of this category.
 
 In netflix prize, the latent factor model, combined with temporal dynamics and
 bias evaluation, became a single model with the greatest prediction power.
@@ -150,17 +152,45 @@ values when only rare amount of previous association histories are provided,
 especailly when the systems are on its early stage.
 This is commonly referred to as {\it cold startup} problem.
 
-\subsubsection{Features-incorporated Matrix Completion}
-% 3.1 dhillon's paper: inductive matrix completion
-A recently emerging paper proposed an {\it Inductive Matrix Completion} method, in
-which features of items are considered while completing matrices. 
-According to \cite{jain2013provable}, this feature incorporation method can be
-explained as a way to provide additional support for sparse matrices. 
-From this perspective, we can see it as a new approach that incorporates
-advantages from both collaborative filtering and content-based filtering. 
-A more recent paper \cite{natarajan2014inductive} in bioinformatics 
-demonstrated successful application of inductive matrix completion on
-gene-disease analytics.
+\subsection{Inductive Matrix Completion}
+% introduce this formulation and advantage of this framework
+Advantages of incorporating features are obvious. 
+lower sample complexity for existing users/jobs.
+predict precisely for new users/jobs. 
+
+% brief math introduction
+Formulate the problem as that of recovering a low-rank matrix $W_*$ using
+observed entries $R_{ij} = x_i^T W_{*} y_j$ and the user/job feature vectors $x_i$, $y_j$. By
+factoring $W = U V^T$ , we see that this scheme constitutes a bi-linear
+prediction $(x^T U_{*})(V_{*} y)$ for a new user/job pair $(x, y)$.
+
+% existing solver A (not scalable)
+One practical solution is to use trace-norm constraint as a proxy for the rank
+constraint and then solve the resulting non-smooth convex optimization
+problem. Notwithstanding, the resulting convex optimization methods require
+computation of full SVD for matrices with potentially large rank and hence do
+not satisfy scalability to large problems.
+
+% existing solver B (scalable but get stuck in local minima)
+Parameterization over $W$ as $W = U V^T$ and then alternatingly optimize for
+$U$ and $V$ is also a considerable approach in practice. To our best
+knowledge, alternating minimization and its variants need to solve only least
+squares problems and hence are scalable in practice but might get stuck in a
+local minima.
+
+% break through: dhillon's paper - inductive matrix completion
+A recent paper \cite{jain2013provable} provides theoretical
+supports for a variant of {\it alternating minimization} method to solve
+{\it Inductive Matrix Completion} problem, in which other than a small number
+of observations from the suitability matrix, the feature vectors for users and
+jobs are also available.
+According to \cite{jain2013provable}, under standard set of assumptions,
+alternating minimization provably converges at a linear rate to the global
+optimum of two low-rank estimation problems: a) RIP measurements based general
+low-rank matrix sensing, and b) low-rank matrix completion. A more recent
+paper \cite{natarajan2014inductive} in bioinformatics demonstrated successful
+application of such inductive matrix completion
+framework on gene-disease analytics.
 
 % 3.2 propose kernel-based inductive matrix completion?
 One possible enhancement for above inductive matrix completion is to
@@ -345,7 +375,7 @@ Zip5 is the most illustrative example for this type of attribute.
 Another set of attributes are disregarded because we are incapable of
 modelling these relevant factors. For example, temporal dynamics (i.e. {\it
     StartDate and EndDate} of job) are not planned to be captured in our
-current designed. 
+current design. 
 
 % 3. processing textual data (description, requirements)
 %% (present procedure)
@@ -409,12 +439,81 @@ user-job pair. To make it more specific, the high association here can be
 viewd as application potential in our experiment.
 
 \subsection{Inductive Matrix Completion} % 1-2 pages
-As previously mentioned, a recently emerged approach, named inductive matrix
-completion, gained great success on recommendation task when side information
-of users and items(in this case, jobs) are available. According to the
-published paper \cite{jain2013provable}, one should be able to predict
-inductively on new users/jobs. Unlike standard matrix
-completion, in this setting.
+As previously mentioned, one should formulate it as {\it inductive matrix
+    completion} when side information of users and items (in this case, jobs)
+are available. 
+Even through simple alternating minimization method, one should be able to
+recover back the exact underlying low-rank matrix and predict inductively on
+new users and jobs if provided conditions are satisfied by the set of
+measurements \cite{jain2013provable}. 
+And intuitively, it is not exaggerated to claim that such formulation and
+corresponding solver (AltMin) take advantage of both classic approaches -- content-based
+filtering and collaborative filtering in recommendation problem: 
+    less sample complexity and inductivity on new users/jobs. 
+
+\subsubsection{Algorithmic Description} 
+% algorithm presentation
+\newcommand{\xii}{\boldsymbol{x}_i}
+\newcommand{\yj}{\boldsymbol{y}_j}
+The algorithmic procedures are shown in Algorithm \ref{AltMin}.
+\begin{algorithm}
+    \caption{Alternating Minimization for Least-Square Inductive Matrix
+        Completion}
+    \label{alg:AltMin}
+    \begin{algorithmic}[1]
+
+\State \textbf{INPUT}: \\ \ \ a) sparse matrices $X$ and $Y$ denote features of users
+and jobs. \\ \ \ b) matrix $A$ denotes partial observation of application
+association with observed index set $\Omega$
+\State \
+
+\State Initialize $U_{(0)}$ and $V_{0}$ by uniform randomization
+\State \textbf{Do}  
+\State \  \
+    $V_{(k+1)}$ = argmin $\alpha \sum_{(i,j) \in \Omega} 
+    (\xii^T U_{(k)} V_{(k)}^T \yj - 1)^2 
+    + (1-\alpha) \sum_{(i,j) \not \in \Omega} (\xii^T U_{(k)} V_{(k)}^T \yj - 0)^2$
+
+\State \  \
+$U_{(k+1)}$ = argmin $\alpha \sum_{(i,j) \in \Omega}(\xii^T
+    U_{(k)} V_{(k+1)}^T \yj - 1)^2 +
+    (1-\alpha) \sum_{(i,j) \not \in \Omega}(\xii^T U_{(k)} V_{(k+1)}^T \yj - 0)^2$
+\State \textbf{Until} Convergence. 
+\State Predict values for missing entries: $\forall (i,j) \not \in \Omega$, 
+$R_{ij} = \xii^T U_{*} V_{*}^T \yj$
+
+\State \
+
+\State \textbf{OUTPUT: } \\ 
+\ \ a) Model Parameter $W_{*} = U_{*} V_{*}^T$ \\ 
+\ \ b) Predicted Value for $(i,j) \not \in \Omega$
+
+\end{algorithmic}
+\end{algorithm}
+
+Note that $\alpha \in (0, 1)$ is the weight to balance optimization objective between
+observed and missing labels.
+
+\subsubsection{Implementation Details}
+% one explantionary words
+\textbf{Initialization}. Randomizing all components of $U_{(0)}$ and
+$V_{(0)}$ to uniform distribution over $(0, 1)$ works well in our
+experimentation. 
+
+\textbf{Optimization}.
+During each stage of alternating minimization, standarded conjugate gradient method is
+employed to solve least square problem. 
+
+\textbf{0-1 pickup}.
+
+\textbf{OTHER DETAILS}.
+
+\subsubsection{Results}
+% one graph to demonstrate the result (error w.r.t lambda)
+
+
+\subsection{Conclusions}
+% one concluding paragraph
 
 
 % \subsection{ (optional) kernelized inductive matrix completion}
