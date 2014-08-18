@@ -19,29 +19,34 @@ from util import *
 inFile = sys.argv[1]
 
 with open(inFile) as input:
-	text = zip(*(line.strip().split('\t') for line in input))
-	text = text[3]
-	text = text[1:len(text)-1]
-	#print text
+    text = zip(*(line.strip().split('\t') for line in input))
+    text = text[3]
+    text = text[1:len(text)]
 
 output = ["" for n in range(len(text))]
-output_file = open('htmls.' + inFile , 'w')
 
 nTexts = len(text)
 print "nTexts (nJobs): ", nTexts
+
 pb = ProgressBar(nTexts, 50)    
 
-for i in range (0, nTexts-1):
+for i in range (0, nTexts):
     try:
         output[i] = strip_tags(text[i])
     except:
         continue
-	
-	for word in delete_list:
-		output[i] = output[i].replace(word, "")
-
-	print output[i]
-	output_file.write("%s\n" % output[i])
-
+    
+    '''
+    for word in delete_list:
+        output[i] = output[i].replace(word, "")
+    '''
     pb.update(i)
     pb.display()
+
+output_file = open('htmls.'+inFile , 'wb')
+progress = 0
+for item in output:
+    output_file.write("%s\n" % item)
+    pb.update(progress)
+    pb.display()
+    progress += 1
