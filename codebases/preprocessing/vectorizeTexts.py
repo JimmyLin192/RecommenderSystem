@@ -19,6 +19,8 @@ from nltk.stem.lancaster import LancasterStemmer
 from nltk.stem.isri import ISRIStemmer
 import heapq, csv, sys
 import string, re
+from util import *
+from multiprocessing import Pool
 
 WORDS = words.words()
 stop = stopwords.words('english')
@@ -153,7 +155,7 @@ def unique (tokens):
     nafter = len(tokensAfterUniq)
     return list(tokensAfterUniq), nbefore, nafter
 
-def computeTF (term, text, alltexts):
+def computeTF (INPUT):
     '''
     Compute the TF from text collection
     Input:
@@ -163,6 +165,7 @@ def computeTF (term, text, alltexts):
     Output:
         tf
     '''
+    term, text = INPUT
     return text.count(term)
 
 class PriorityQueue:
@@ -208,16 +211,25 @@ def processTokens (tokens):
     othersRemovedTokens = removeOthers(stampsRemovedTokens)
     return othersRemovedTokens
 
+def preoperate (alltokens):
+    lowerCasedTokens = lowerCase(alltokens) 
+    punctionRemovedTokens = removePunctions(lowerCasedTokens)
+    stampsRemovedTokens = preFilter(punctionRemovedTokens)
+    stemmedTokens = getStemmes(stampsRemovedTokens)
+    othersRemovedTokens = removeOthers(stemmedTokens)
+    uniqtokens, nbefore, nafter = unique(othersRemovedTokens)
+    return uniqtokens
+
 if __name__ == '__main__':
     """
     Configuration
     """
-    inputTextsName = sys.argv[1]
-    outputTextName = sys.argv[2]
+    inputTextsName = sys.argv[1] # input: a set of texts
+    outputTextName = sys.argv[2] # output: a set of keywords
     csvout = open(outputTextName, 'w+', 0)
     tfidfwriter = csv.writer(csvout, delimiter=' ')
-    minSupport = 5 # min frequency for the word to be considered as a feature
-    minDF = 10 # min number of documents the word needs to be in
+    minSupport = 500 # min frequency for the word to be considered as a feature
+    minDF = 150 # min number of documents the word needs to be in
     maxDFPercent = 0.90 # the max value of the expression (document frequency of a
     # word/total number of document) to be considered as good feature to be in
     # the document
@@ -226,51 +238,46 @@ if __name__ == '__main__':
     Pre-processing
     """
     alltexts, alltokens = getTextCollectionFromTxtFile(inputTextsName)
-    lowerCasedTokens = lowerCase(alltokens) 
-    punctionRemovedTokens = removePunctions(lowerCasedTokens)
-    stemmedTokens = getStemmes(punctionRemovedTokens)
-    stampsRemovedTokens = preFilter(stemmedTokens)
-    othersRemovedTokens = removeOthers(stampsRemovedTokens)
-    uniqtokens, nbefore, nafter = unique(othersRemovedTokens)
-
     textCollection = TextCollection(alltexts)
-
     nTexts = len(alltexts)
+    print "Data READIN FINISHED!"
+    uniqtokens = preoperate (alltokens)
     nUniqTokens = len(uniqtokens)
     print "nTexts: ", nTexts, "nUniqTokens: ", nUniqTokens
 
-    allTF = []
-    allTFIDF = []
+    pool = Pool(processes=8)
+    #pb = ProgressBar(nTexts, 50)
+    tokenized_texts = pool.map(processTokens, [text.tokens for text in alltexts])
+    print "tokenization for every document finished!"
 
-    for ti in range(0, nTexts):
-        text = alltexts[ti]
-        text.tokens = processTokens (text.tokens) 
-    
-    for term in uniqtokens:
+    pb = ProgressBar(nUniqTokens, 50)
+    progress = 0
+    for term in uniqtokens: 
         tf_vector = []
         #tfidf_vector = []
-        for ti in range(0, nTexts):
+        '''
+        for ti in range(nTexts):
             text = alltexts[ti]
-            tf = computeTF(term, text, textCollection)
+            tf = computeTF(term, text)
             #tfidf = textCollection.tf_idf (term, text)
             tf_vector.append(tf)
             #tfidf_vector.append(tfidf)
-        allTF.append(tf_vector)
+        '''
+        tf_vector = pool.map(computeTF, [(term,text) for text in tokenized_texts])
         #allTFIDF.append(tfidf_vector)
         ## term processing
         support = sum(tf_vector)
         DF = len([i for i, e in enumerate(tf_vector) if e != 0])
         #DFpercent = max(tfidf_vector)
-        #tfidfwriter.writerow([term, support, DF, DFpercent])
-        tfidfwriter.writerow([term, support, DF])
         # post prunning
-        if support < minSupport: continue
+        if support < minSupport: 
+            progress += 1
+            continue
         else:
-            print term, support, DF
-        '''
-        if DF < minDF: continue
-        if DFpercent > maxDFPercent : continue
-        '''
-        ## pq.push((term, support, DF, DFpercent), -support)
+            out = [term, support, DF]
+            tfidfwriter.writerow(out)
+        pb.update(progress)
+        pb.display()
+        progress += 1
+    
     print "DONE"
-
