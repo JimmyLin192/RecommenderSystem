@@ -228,9 +228,11 @@ if __name__ == '__main__':
     outputTextName = sys.argv[2] # output: a set of keywords
     csvout = open(outputTextName, 'w+', 0)
     tfidfwriter = csv.writer(csvout, delimiter=' ')
+    '''
     minSupport = 500 # min frequency for the word to be considered as a feature
     minDF = 150 # min number of documents the word needs to be in
     maxDFPercent = 0.90 # the max value of the expression (document frequency of a
+    '''
     # word/total number of document) to be considered as good feature to be in
     # the document
 
@@ -255,27 +257,12 @@ if __name__ == '__main__':
     for term in uniqtokens: 
         tf_vector = []
         #tfidf_vector = []
-        '''
-        for ti in range(nTexts):
-            text = alltexts[ti]
-            tf = computeTF(term, text)
-            #tfidf = textCollection.tf_idf (term, text)
-            tf_vector.append(tf)
-            #tfidf_vector.append(tfidf)
-        '''
         tf_vector = pool.map(computeTF, [(term,text) for text in tokenized_texts])
-        #allTFIDF.append(tfidf_vector)
         ## term processing
         support = sum(tf_vector)
         DF = len([i for i, e in enumerate(tf_vector) if e != 0])
-        #DFpercent = max(tfidf_vector)
-        # post prunning
-        if support < minSupport: 
-            progress += 1
-            continue
-        else:
-            out = [term, support, DF]
-            tfidfwriter.writerow(out)
+        out = [term, support, DF]
+        tfidfwriter.writerow(out)
         pb.update(progress)
         pb.display()
         progress += 1
