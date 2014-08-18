@@ -57,17 +57,17 @@ def vectorize_major(major_dict):
 '''
     main function
 '''
-with open('../../Dataset/users.tsv','rb') as tsvin, \
-        open('./win1_Users.sparse', 'wb') as userSparseOut, \
+with open('../../Dataset/users.tsv','rb') as rawUsersIn, \
+        open('./win1_Users.sparse', 'wb') as userFeatureOut, \
         open('./win1_Users.index', 'wb') as userIndexOut, \
         open('./process_users.log', 'wb') as log:
 
     original = sys.stdout
     sys.stdout = log
-    tsvin = csv.reader(tsvin, delimiter='\t')
-    userSparseOut = csv.writer(userSparseOut, delimiter=' ')
+    rawUsersIn = csv.reader(rawUsersIn, delimiter='\t')
+    userFeatureOut = csv.writer(userFeatureOut, delimiter=' ')
     userIndexOut = csv.writer(userIndexOut, delimiter=' ')
-    header = tsvin.next()
+    header = rawUsersIn.next()
     nColumns = len(header)
     """
     List of raw user features:
@@ -105,7 +105,7 @@ with open('../../Dataset/users.tsv','rb') as tsvin, \
     INDEX_IDX = 0
     MAJOR_IDX = 8
 
-    for user in tsvin:
+    for user in rawUsersIn:
         windowID = user[1]
         if not windowID == '1':
             break
@@ -164,7 +164,7 @@ with open('../../Dataset/users.tsv','rb') as tsvin, \
     
     '''
     ## HEADER FORMULATION
-    userSparseOut.writerows([newheader])
+    userFeatureOut.writerows([newheader])
     '''
     nBCSFeatures = None
     st = LancasterStemmer()
@@ -176,6 +176,11 @@ with open('../../Dataset/users.tsv','rb') as tsvin, \
             if i == INDEX_IDX:
                 # output USERID in separate file: win1_Users.index
                 userIndexOut.writerows([[scsUser[i]]])
+                if USER_INDEX_INCLUDED:
+                    bcsUser.append(str(0)+":"+str(strscsUser[i]))
+                else:
+                    bcsUser.append(str(0)+":"+str(0))
+                acc_index += 1
                 continue
             if i in removeSet: 
                 # ignore feature to be removed
@@ -204,7 +209,7 @@ with open('../../Dataset/users.tsv','rb') as tsvin, \
             nBCSFeatures = len(bcsUser)
             print "nBCSFeatures (total):", nBCSFeatures
         ## output to external csv, piece by piece
-        userSparseOut.writerows([bcsUser])
+        userFeatureOut.writerows([bcsUser])
 
         pb_index += 1
         pb.update(pb_index)
