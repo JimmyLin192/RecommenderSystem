@@ -271,8 +271,7 @@ if __name__ == '__main__':
         #DFpercent = max(tfidf_vector)
         # post prunning
         if support < minSupport: 
-            progress += 1
-            continue
+            pass
         else:
             out = [term, support, DF]
             tfidfwriter.writerow(out)
