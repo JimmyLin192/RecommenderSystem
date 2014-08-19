@@ -270,12 +270,16 @@ if __name__ == '__main__':
         DF = len([i for i, e in enumerate(tf_vector) if e != 0])
         #DFpercent = max(tfidf_vector)
         # post prunning
+        '''
         if support < minSupport: 
             progress += 1
             continue
         else:
             out = [term, support, DF]
             tfidfwriter.writerow(out)
+        '''
+        out = [term, support, DF]
+        tfidfwriter.writerow(out)
         pb.update(progress)
         pb.display()
         progress += 1
