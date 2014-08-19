@@ -129,34 +129,66 @@ treatment. The main drawback of using traditional binary classifier is that.
 \subsubsection{Collaborative Filtering}
 The developing motivation of {\it Collaborative Filtering} is that the
 profiles of items or users are not always available or poorly collect in
-some settings. Instead, the past histories of user-item association, also called {\it
-    explicit feedback}, are easy to obtain.  
+some settings but instead, the past histories of user-item association, also called {\it
+    explicit feedback}, are easy to obtain. Collaborative filtering put its
+focus directly on the target (user-job ), inferring missing ones from observed
+one, rather than relationships between target
+variables and features. Nearest neighbour method and latent factor model are
+two major approaches for Collaborative Filtering.
 
-Nearest neighbour method and latent factor model are two major approaches for
-Collaborative Filtering.
 % 2.1 nearest neighbour method TODO
 
 
 % 2.2 latent factor model TODO
-This model has an underlying assumption: the real exact rating matrix are
-low-rank matrix.   
-Stochastic Gradient Descent and Alternating Least Square are two main
-approaches to numerically solve matrix completion task of this category.
+The latent factor model has an underlying assumption: the real exact rating matrix are
+low-rank matrix. By modelling target rating variable as 
+\begin{align}
+    R_{ij} = u_i^T v_j 
+\end{align}
+we are able to use least square cost to guide the optimization procedure: 
+\begin{align} \label{latent:opt}
+    min \sum_{i,j} || r_{ij} - u_i^T v_j ||^2 
+\end{align}
+Note that $U \in R^{n\times k}$ and $V \in R^{m\times k}$ are respective matrices
+restoring hidden-topic measurements for users and items(jobs). Intuitively,
+$k$ denotes the number of latent topics, with its quantity reflecting shared
+interest we want to measure over user and job entity. Also, regularized
+squared error is typically used, in order to avoid overfitting of this model.
+Hence, \ref{latent:opt} can be further extended to be 
+\begin{align} \label{reglatent:opt}
+    min \sum_{i,j} || r_{ij} - u_i^T v_j ||^2 + \lambda(||u_i||^2 + ||v_j||^2) 
+\end{align}
+One approach to get numerical solution is through {\it Stochastic Gradient
+    Descent}, where each update take into account only one observed instance.
+The update rules with $\gamma$ step size are presented as follows: 
+\begin{align}
+    v_j \leftarrow v_j + \gamma \big( (r_{ij}-u_i^T v_j)\cdot u_i + \lambda
+    v_j \big) \\
+    u_i \leftarrow u_i + \gamma \big( (r_{ij}-u_i^T v_j)\cdot v_j + \lambda
+    u_i \big)
+\end{align}
+It can be easily figured out that equation \ref{reglatent:opt} is not convex.
+But if we fix one variable ($U$ or $V$), the remained problem becomes convex
+optimization and hence exact solution can be found. 
+One alternative technique to solve \ref{reglatent:opt}, known as {\it Alternating
+    Least Square}, takes advantage of this idea and turns out to be the one with
+both computational convenience and convergence to decent local minima.
 
 In netflix prize, the latent factor model, combined with temporal dynamics and
-bias evaluation, became a single model with the greatest prediction power.
-
+bias evaluation, winned as a single model with the greatest prediction power.
 % 2.3 weakness 
-However, collaborative filtering fails to provide supervision of missing
-values when only rare amount of previous association histories are provided,
-especailly when the systems are on its early stage.
-This is commonly referred to as {\it cold startup} problem.
+Despite of that, collaborative filtering also has its limitation. It fails to
+provide supervision of missing values when only rare amount of previous
+association histories are provided, especially when the systems are on its
+early stage.  This is commonly referred to as {\it cold startup} problem.
 
 \subsection{Inductive Matrix Completion}
 % introduce this formulation and advantage of this framework
-Advantages of incorporating features are obvious. 
-lower sample complexity for existing users/jobs.
-predict precisely for new users/jobs. 
+Comparing to collaborative filtering
+, the conventional approach for matrix completion, advantages of incorporating
+features are obvious in two aspects. One is lower sample complexity while
+predicting missing values for known users and jobs.   The other is that precise
+prediction can be produced for new/unkonw users and jobs. 
 
 % brief math introduction
 Formulate the problem as that of recovering a low-rank matrix $W_*$ using

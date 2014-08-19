@@ -24,8 +24,11 @@ import csv
 NARGS = 5
 WIN_ONE_ONLY = True
 def usage():
-    ustr = 'Usage: \n'
-    ustr += '  process_apps.py [user_index_file] [job_index_file] [app_file] [A_file]'
+    ustr = ''
+    ustr += 'Description: \n'
+    ustr += '    generate matrix A for IMC problem'
+    ustr += 'Usage: \n'
+    ustr += '    process_apps.py [user_index_file] [job_index_file] [app_file] [A_file]'
     sys.stderr.write(ustr + '\n')
 
 def output(job_mat_ids, user_mat_id, A_writer):
@@ -40,8 +43,9 @@ def output(job_mat_ids, user_mat_id, A_writer):
 if __name__ == '__main__':
     # validate the input
     nargs = len(sys.argv)
-    if nargs < NARGS:
+    if nargs != NARGS:
         usage()
+        sys.exit(-1)
     user_file = sys.argv[1]
     job_file = sys.argv[2]
     app_file = sys.argv[3]
