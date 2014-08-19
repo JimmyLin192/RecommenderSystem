@@ -262,6 +262,9 @@ if __name__ == '__main__':
     nUniqTokens = len(uniqtokens)
     print "nTexts: ", nTexts, "nUniqTokens: ", nUniqTokens
 
+    for term in uniqtokens: 
+        keyword_writer.writerow([term])
+
     pool = Pool(processes=8)
     #pb = ProgressBar(nTexts, 50)
     tokenized_texts = pool.map(processTokens, [text.tokens for text in alltexts])
@@ -269,7 +272,7 @@ if __name__ == '__main__':
     del alltexts
     for text in tokenized_texts:
         text_out_writer.writerow(text)
-
+    '''
     pb = ProgressBar(nUniqTokens, 50)
     progress = 0
 
@@ -285,5 +288,5 @@ if __name__ == '__main__':
         pb.update(progress)
         pb.display()
         progress += 1
-    
+    '''
     print "DONE"
