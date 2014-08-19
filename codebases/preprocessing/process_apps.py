@@ -24,8 +24,11 @@ import csv
 NARGS = 5
 WIN_ONE_ONLY = True
 def usage():
-    ustr = 'Usage: \n'
-    ustr += '  process_apps.py [user_index_file] [job_index_file] [app_file] [A_file]'
+    ustr = ''
+    ustr += 'Description: \n'
+    ustr += '    generate matrix A for IMC problem'
+    ustr += 'Usage: \n'
+    ustr += '    process_apps.py [user_index_file] [job_index_file] [app_file] [A_file]'
     sys.stderr.write(ustr + '\n')
 
 def output(job_mat_ids, user_mat_id, A_writer):
