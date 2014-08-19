@@ -40,8 +40,9 @@ def output(job_mat_ids, user_mat_id, A_writer):
 if __name__ == '__main__':
     # validate the input
     nargs = len(sys.argv)
-    if nargs < NARGS:
+    if nargs != NARGS:
         usage()
+        sys.exit(-1)
     user_file = sys.argv[1]
     job_file = sys.argv[2]
     app_file = sys.argv[3]

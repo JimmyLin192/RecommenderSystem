@@ -272,8 +272,7 @@ if __name__ == '__main__':
         # post prunning
         '''
         if support < minSupport: 
-            progress += 1
-            continue
+            pass
         else:
             out = [term, support, DF]
             tfidfwriter.writerow(out)
