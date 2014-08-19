@@ -220,14 +220,28 @@ def preoperate (alltokens):
     uniqtokens, nbefore, nafter = unique(othersRemovedTokens)
     return uniqtokens
 
+def feat_output(feat_writer, tf_vector, uniq_tokens_dict):
+    
+    return 
+
+def usage():
+    string = "Usage: \n"
+    string += "  ./vectorizeTexts.py [html_texts] [keyword_outfile] [feature_outfile]"
+
+NARGS = 3
 if __name__ == '__main__':
+    if len(sys.argv) < NARGS:
+        usage()
     """
     Configuration
     """
     inputTextsName = sys.argv[1] # input: a set of texts
-    outputTextName = sys.argv[2] # output: a set of keywords
-    csvout = open(outputTextName, 'w+', 0)
-    tfidfwriter = csv.writer(csvout, delimiter=' ')
+    keyword_outfile = sys.argv[2] # output: a set of keywords
+    text_outfile = sys.argv[3] # output: a set of keywords
+    keyword_writer = open(keyword_outfile, 'w+', 0)
+    text_out_writer = open(text_outfile, 'w+', 0)
+    keywords_writer = csv.writer(keyword_writer, delimiter=' ')
+    text_out_writer = csv.writer(text_out_writer, delimiter=' ')
     '''
     minSupport = 500 # min frequency for the word to be considered as a feature
     minDF = 150 # min number of documents the word needs to be in
@@ -243,6 +257,7 @@ if __name__ == '__main__':
     textCollection = TextCollection(alltexts)
     nTexts = len(alltexts)
     print "Data READIN FINISHED!"
+
     uniqtokens = preoperate (alltokens)
     nUniqTokens = len(uniqtokens)
     print "nTexts: ", nTexts, "nUniqTokens: ", nUniqTokens
@@ -251,18 +266,22 @@ if __name__ == '__main__':
     #pb = ProgressBar(nTexts, 50)
     tokenized_texts = pool.map(processTokens, [text.tokens for text in alltexts])
     print "tokenization for every document finished!"
+    del alltexts
+    for text in tokenized_texts:
+        text_out_writer.writerow(text)
 
     pb = ProgressBar(nUniqTokens, 50)
     progress = 0
+
     for term in uniqtokens: 
         tf_vector = []
-        #tfidf_vector = []
         tf_vector = pool.map(computeTF, [(term,text) for text in tokenized_texts])
         ## term processing
         support = sum(tf_vector)
         DF = len([i for i, e in enumerate(tf_vector) if e != 0])
         out = [term, support, DF]
-        tfidfwriter.writerow(out)
+        keywords_writer.writerow(out)
+        del tf_vector
         pb.update(progress)
         pb.display()
         progress += 1
