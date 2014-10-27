@@ -1,0 +1,291 @@
+\documentclass{article} % For LaTeX2e
+\usepackage{nips14submit_e,times}
+\usepackage{cite}
+\usepackage{enumitem}
+\usepackage{algorithm,algorithmicx}
+\usepackage[noend]{algpseudocode}
+\usepackage{url,graphicx,amsmath}
+%\documentstyle[nips14submit_09,times,art10]{article} % For LaTeX 2.09
+\usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
+
+\title{Project Report: Application Prediction}
+
+\author{
+%XIN LIN \\
+%Department of Computer Science\\
+%University of Texas at Austin \\
+%Austin, TX 78705 \\
+%\texttt{jimmylin@utexas.edu} \\
+%\And
+%Coauthor \\
+%Affiliation \\
+%Address \\
+%\texttt{email} \\
+%\AND
+%Coauthor \\
+%Affiliation \\
+%Address \\
+%\texttt{email} \\
+%\And
+%Coauthor \\
+%Affiliation \\
+%Address \\
+%\texttt{email} \\
+%\And
+%Coauthor \\
+%Affiliation \\
+%Address \\
+%\texttt{email} \\
+%(if needed)\\
+}
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to \LaTeX{} to determine where to break
+% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
+% puts 3 of 4 authors names on the first line, and the last on the second
+% line, try using \AND instead of \And before the third author name.
+
+\newtheorem{remark}{Remark}
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+\nipsfinalcopy % Uncomment for camera-ready version
+
+\begin{document}
+
+
+\maketitle
+
+\section{Optimization}
+\subsection{Conventional Matrix Completion}
+% 2.2 latent factor model 
+The latent factor model has an underlying assumption: the real exact rating matrix are
+low-rank matrix. By modelling target rating variable as 
+\begin{align}
+    R_{ij} = U_i^T V_j 
+\end{align}
+Then we are able to use least square cost to guide the optimization procedure: 
+\begin{equation}
+    \begin{aligned}
+        &\min_{U,V} 
+        && \sum_{(i,j)\in \Omega} (A_{ij} - U_i^T V_j)^2
+        + \frac{\lambda}{2}(||U||_F^2 + ||V||_F^2)
+    \end{aligned}
+\end{equation}
+where $A_{i,j}$ is the observed ground-truth entry and $\Omega$ is the index set of
+entries that are observed. 
+
+\subsection{One-Class Matrix Completion}
+\begin{equation}
+    \begin{aligned}
+        &\min_{U,V} 
+        && \sum_{(i,j)\in \Omega} (1 - U_i^T V_j)^2
+        + \frac{\lambda}{2}(||U||_F^2 + ||V||_F^2)
+    \end{aligned}
+\end{equation}
+%\begin{remark}
+%    Since some jobs have fairly limited number of previous history, then
+%    One-Class Matrix Completion is expected to have bad performance.
+%\end{remark}
+\subsection{Conventional Inductive Matrix Completion}
+% brief math introduction
+Formulate the problem as that of recovering a low-rank matrix $W_*$ using
+observed entries $R_{ij} = x_i^T W_{*} y_j$ and the user/job feature vectors $x_i$, $y_j$. By
+factoring $W = U V^T$ , we see that this scheme constitutes a bi-linear
+prediction $(x^T U_{*})(V_{*} y)$ for a new user/job pair $(x, y)$.
+\begin{equation}
+    \begin{aligned}
+        &\min_{U,V} &&\sum_{(i,j)\in \Omega} (A_{ij} - x_i^TUV^Ty_j)^2 
+        + \frac{\lambda}{2}(||U||_F^2 + ||V||_F^2)
+    \end{aligned}
+\end{equation}
+% break through: dhillon's paper - inductive matrix completion
+\begin{remark}
+According to \cite{jain2013provable}, under standard set of assumptions,
+alternating minimization provably converges at a linear rate to the global
+optimum of two low-rank estimation problems: a) RIP measurements based general
+low-rank matrix sensing, and b) low-rank matrix completion. A more recent
+paper \cite{natarajan2014inductive} in bioinformatics demonstrated successful
+application of such inductive matrix completion
+framework on gene-disease analytics.
+\end{remark}
+
+\subsection{One-Class Inductive Matrix Completion}
+\begin{equation}
+    \begin{aligned}
+        &\min_{U,V} &&\sum_{(i,j)\in\Omega} (1 - x_i^TUV^Ty_j)^2 
+        + \frac{\lambda}{2}(||U||_F^2 + ||V||_F^2)
+    \end{aligned}
+\end{equation}
+
+\subsection{One-Class Inductive Matrix Completion with Biases}
+\begin{equation}
+    \begin{aligned}
+        &\min_{U,V} &&(1-\alpha) \sum_{A_{ij}=1} (1 - x_i^TUV^Ty_j)^2 +
+        \alpha \sum_{A_{ij}=0} (0 - x_i^TUV^Ty_j)^2 + \frac{\lambda}{2}(||U||_F^2 + ||V||_F^2)
+    \end{aligned}
+\end{equation}
+
+\subsection{One-Class Inductive Matrix Completion with kernel method}
+% 3.2 propose kernel-based inductive matrix completion?
+One possible enhancement for above inductive matrix completion is to
+extend our consideration from the linear association between features and
+latent factors to an version that accepts non-linear association.
+By this intuition, we can name this approach as 
+    {\it Kernel-based Inductive Matrix Completion}.
+By taking into account non-linear relations between designed features and hidden
+topics (shared latent factors), the space of latent factors can be largely
+expanded and then it would be more likely to automatically detect latent
+factors with higher quality. 
+ 
+\subsection{One-Class Inductive Matrix Completion with pre-clustering}
+
+\section{Algorithm}
+% algorithm presentation
+\newcommand{\xii}{\boldsymbol{x}_i}
+\newcommand{\yj}{\boldsymbol{y}_j}
+The algorithmic procedures for {\it One-class Inductive Matrix Completion} are
+shown in Algorithm \ref{alg:AltMin}.  
+\begin{algorithm}
+    \caption{Alternating Minimization for 
+        One-Class Inductive Matrix Completion with Biases}
+    \label{alg:AltMin}
+    \begin{algorithmic}[1]
+
+\State \textbf{INPUT}: \\ \ \ a) sparse matrices $X$ and $Y$ denote features of users
+and jobs. \\ \ \ b) matrix $A$ denotes partial observation of application
+association with observed index set $\Omega$
+\State \
+
+\State Initialize $U_{(0)}$ and $V_{0}$ by uniform randomization
+\State \textbf{Do}  
+\State \ \ \
+$V_{(k+1)}$ = argmin $(1-\alpha) \sum_{(i,j) \in \Omega} 
+    (1- \xii^T U_{(k)} V_{(k)}^T \yj)^2 
+    + \alpha \sum_{(i,j) \not \in \Omega} (0 - \xii^T U_{(k)} V_{(k)}^T \yj)^2$
+
+\State \  \
+$U_{(k+1)}$ = argmin $(1-\alpha) \sum_{(i,j) \in \Omega}
+    (1-\xii^T U_{(k)} V_{(k+1)}^T \yj)^2 +
+    \alpha \sum_{(i,j) \not \in \Omega}
+    (0-\xii^T U_{(k)} V_{(k+1)}^T \yj)^2$
+\State \textbf{Until} Convergence. 
+\State Predict values for missing entries: for some $ (i,j) \not \in \Omega$,
+\State 
+\ \  \ $R_{ij} = 1,\ \text{if } \xii^T U_{*} V_{*}^T \yj > \text{ cutoff } \phi$
+\State 
+\ \  \ $R_{ij} = 0,\ \text{otherwise}$
+
+\State \
+
+\State \textbf{OUTPUT: } \\ 
+\ \ a) Model Parameter $ U_{*}$ and $V_{*}$ 
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+    \caption{Alternating Minimization for 
+        One-Class Inductive Matrix Completion with Kernel Methods}
+    \label{alg:kernel}
+    \begin{algorithmic}[1]
+
+\State \textbf{INPUT}: \\ \ \ a) sparse matrices $X$ and $Y$ denote features of users
+and jobs. \\ \ \ b) matrix $A$ denotes partial observation of application
+association with observed index set $\Omega$
+\State \
+
+\State Initialize $U_{(0)}$ and $V_{0}$ by uniform randomization
+\State \
+
+\State \textbf{OUTPUT: } \\ 
+\ \ a) Model Parameter $ U_{*}$ and $V_{*}$ 
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+    \caption{Alternating Minimization for 
+        One-Class Inductive Matrix Completion with Pre-clustering}
+    \label{alg:prec}
+    \begin{algorithmic}[1]
+
+\State \textbf{INPUT}: \\ \ \ a) sparse matrices $X$ and $Y$ denote features of users
+and jobs. \\ \ \ b) matrix $A$ denotes partial observation of application
+association with observed index set $\Omega$
+\State \
+
+\State Initialize $U_{(0)}$ and $V_{0}$ by uniform randomization
+\State \
+
+\State \textbf{OUTPUT: } \\ 
+\ \ a) Model Parameter $ U_{*}$ and $V_{*}$ 
+\end{algorithmic}
+\end{algorithm}
+
+\section{Practical Issues}
+% introduce problem and evaluation criteria
+Due to limitation of acquired data, our first experiment is oriented to
+problem of application prediction. Specifically, given a set of featured users
+and featured jobs, the designed system should predict whether one user will
+apply for one particular job.
+
+\subsection{One-class Matrix Completion with Bias} % 0.5 page
+\textbf{Bias}. Bias parameter $\alpha \in (0, 1)$ is the weight to balance
+optimization objective between observed and missing labels. Note that with
+unbiased version of inductive one-class matrix completion, this parameter
+should be set to $1$, that is $\alpha = 1$.
+
+\textbf{Initialization}. Randomizing all components of $U_{(0)}$ and
+$V_{(0)}$ to uniform distribution over $(0, 1)$ works well in our
+experimentation. 
+
+\textbf{Optimization}.
+During each stage of alternating minimization, standarded conjugate gradient method is
+employed to solve least square problem. 
+
+\section{Experiments}
+\subsection{Dataset and Preprocessed Data} 
+
+\subsection{Models for Comparison}
+\renewcommand{\labelenumi}{(\Roman{enumi})}
+\begin{enumerate}
+    \item One-Class Conventional Matrix Completion
+    \item One-Class Inductive Matrix Completion
+    \item One-Class Inductive Matrix Completion with Biases
+    \item (TBD) One-Class Inductive Matrix Completion with Kernel Methods 
+    \item (TBD) One-Class Inductive Matrix Completion with Pre-Clustering
+\end{enumerate}
+
+\subsection{Results}
+% Precision and Recall performance
+
+
+\begin{figure}[h]
+
+    \caption{Precision v.s. Recall Comparison between (I) (II) (III) with various number of topics
+        (a) $K=K_1$, (b) $K=K_2$, (c) $K=K_3$, (d) $K=K_4$. }
+\end{figure}
+
+\begin{figure}[h]
+
+    \caption{Precision v.s. Recall Comparison between models with
+        $\lambda=\lambda_0, \lambda_1,\lambda_2, \lambda_3$ }
+\end{figure}
+
+\begin{figure}[h]
+
+    \caption{Precision v.s. Recall Comparison between various models with
+        different preprocessed data}
+\end{figure}
+
+\section{Conclusions}
+% one concluding paragraph
+
+
+%\subsubsection*{References}
+\bibliography{main}{}
+\bibliographystyle{plain}
+
+
+\end{document}
