@@ -1,4 +1,3 @@
-#!/usr/bin/python2.7
 ############################################################
 ##    FILENAME:   process_jobs.py    
 ##    VERSION:    1.2
@@ -20,67 +19,15 @@ TODO LIST:
 import sys,csv
 import re
 from util import *
-from vectorizeTexts import *
+#from vectorizeTexts import *
 
 csv.field_size_limit(sys.maxsize)
 
-#TODO: use more elegant natural language method to extract useful words
-
-inFile = './jobs1.tsv'
-with open(inFile,'rb') as rawJobsIn,\
-        open('./win1_Jobs.sparse', 'wb') as jobFeatureOut, \
-        open('./win1_Jobs.index', 'wb') as jobIndexOut, \
-        open('./keywords.conf', 'rb') as keywordConf:
-
-    """
-    STEP ONE: open external file for preparation
-    """
-    rawJobsIn = csv.reader(rawJobsIn, delimiter='\t')
-    jobFeatureOut = csv.writer(jobFeatureOut)
-    jobIndexOut = csv.writer(jobIndexOut)
-
-    # process header
-    header = rawJobsIn.next()
-    nColumns = len(header)
-
-    """
-    STEP TWO: preparation for non-textual discretization
-    """
-    dictionaries = [5] # dictionary for discretizing each column
-    values = [] # numerical count of distinct label
-    for i in range(0, nColumns):
-        dictionaries.append({})
-        values.append(0)
-    
-    INVESTIGATE_ATTR_SET = [2, 5, 6, 7, 8]
-    nSampledJobs = 0
-    for row in rawJobsIn:
-        nSampledJobs += 1
-        for i in INVESTIGATE_ATTR_SET:
-            if not dictionaries[i].has_key(row[i]):
-                dictionaries[i][row[i]] = values[i]
-                values[i] += 1
-    print 'nInputJobs: ', nSampledJobs
-
-    NOMINAL_ATTR_SET = [2] + range(5,9) # set of index of discrete attr
-    print 'List of features: '
-    for i in NOMINAL_ATTR_SET:
-        print "\tdict_" + str(i) + ":"+ str(len(dictionaries[i].items()))
-        print "\tvalue_" + str(i) + ":" + str(values[i])
-
-    """
-    STEP THREE: preparation for textual discretization
-    """
-    keywords = []
-    for line in keywordConf:
-        line = line.strip("\n")
-        [kw, f, df] = line.split(" ")
-        keywords.append(kw)
-    nKeywords = len(keywords)
-    print "nKeywords:", nKeywords
-
-    """
-    STEP FOUR: header processing
+def usage():
+    ustr = '''
+    Description: 
+       generate job features (matrix Y) for IMC problem
+    List of raw job features:
         0. JobID
         1. WindowID
         2. Title
@@ -92,6 +39,98 @@ with open(inFile,'rb') as rawJobsIn,\
         8. Zip5
         9. StartDate
         10. EndDate
+    List of Output files:
+       train_Y - matrix Y for training data
+       test_Y - matrix Y for testing data
+       log - statistics about each feature
+    Usage: 
+       process_jobs.py [job_raw_in] [job_text_feat] [train_job_id_in] [test_job_id_in]
+    '''
+    sys.stderr.write(ustr + '\n')
+    return
+
+NARGS = 5
+if __name__ == '__main__':
+    # validate the input
+    nargs = len(sys.argv)
+    if nargs != NARGS:
+        usage()
+        sys.exit(-1)
+
+    """
+    STEP ONE: open external file for preparation
+    """   
+    rawInFile = sys.argv[1]
+    rawJobsIn = open(rawInFile,'rb')
+    textFeatIn = open(sys.argv[2], 'rb')
+    train_jobIndexIn = open(sys.argv[3], 'rb')
+    test_jobIndexIn = open(sys.argv[4], 'rb')
+    train_jobFeatureOut = open("train_Y", 'wb')
+    test_jobFeatureOut = open("test_Y", 'wb')
+
+    rawJobsReader = csv.reader(rawJobsIn, delimiter='\t')
+    textFeatIn = csv.reader(textFeatIn, delimiter=' ')
+    train_jobFeatureOut = csv.writer(train_jobFeatureOut, delimiter=' ')
+    test_jobFeatureOut = csv.writer(test_jobFeatureOut, delimiter=' ')
+
+    # --------------------------------------------------------------
+    train_jobs_id_lookup = {}
+    pos = 0
+    for job_id_str in train_jobIndexIn:
+        job_id = int(job_id_str)
+        train_jobs_id_lookup.update({job_id:pos})
+        pos += 1
+    print "len(train_jobs_id_lookup): ", len(train_jobs_id_lookup)
+    test_jobs_id_lookup = {}
+    pos = 0
+    for job_id_str in test_jobIndexIn:
+        job_id = int(job_id_str)
+        test_jobs_id_lookup.update({job_id:pos})
+        pos += 1  
+    # --------------------------------------------------------------
+
+    # process header
+    header = rawJobsReader.next()
+    nColumns = len(header)
+    """
+    STEP TWO: preparation for non-textual discretization
+    """
+    dictionaries = [] # dictionary for discretizing each column
+    values = [] # numerical count of distinct label
+    for i in range(0, nColumns):
+        dictionaries.append({})
+        values.append(0)
+
+    #NOMINAL_ATTR_SET = [2, 5, 6, 7, 8]
+    NOMINAL_ATTR_SET = [5]  # only city
+    nSampledJobs = 0
+    for line in rawJobsIn:
+        row = line.split('\t')
+        if nSampledJobs == 0: 
+            nSampledJobs += 1
+            continue
+        nSampledJobs += 1
+        for i in NOMINAL_ATTR_SET:
+            if not dictionaries[i].has_key(row[i]):
+                dictionaries[i][row[i]] = values[i]
+                values[i] += 1
+    print 'nInputJobs: ', nSampledJobs
+    rawJobsIn.close()
+
+    print 'List of features: '
+    for i in NOMINAL_ATTR_SET:
+        print "\tdict_" + str(i) + ":" + str(len(dictionaries[i].items()))
+        print "\tvalue_" + str(i) + ":" + str(values[i])
+
+    """
+    STEP THREE: preparation for textual discretization
+    keywords = []
+    for line in keywordConf:
+        line = line.strip("\n")
+        [kw, f, df] = line.split(" ")
+        keywords.append(kw)
+    nKeywords = len(keywords)
+    print "nKeywords:", nKeywords
     """
     '''
     header[-1] = header[-1].strip("\n")
@@ -107,44 +146,39 @@ with open(inFile,'rb') as rawJobsIn,\
     STEP FIVE: process job profile
     """
     # reopen the file for second pass
-    rawJobsIn = open(inFile,'rb')
-    rawJobsIn = csv.reader(rawJobsIn, delimiter='\t')
-    pb = ProgressBar(nSampledJobs, 50)    
-    progress = 0
-    for row in rawJobsIn:
-        progress += 1
+    rawJobsIn = open(rawInFile,'rb')
+    isheader = True
+    for line in rawJobsIn:
+        if isheader: 
+            isheader = False
+            continue
+        row = line.split('\t')
         # NOTE: for now we only consider instance with win=1
         #if not row[WINDOWID_IDX] == '1':
         #    continue
-        # output ID to process_jobs.index file
-        jobIndexOut.writerows([[row[ID_INDEX]]])
-        '''
+        job_id = int(row[ID_INDEX])
         # output features to process_jobs.sparse file
         jobFeature = []
-        acc_index = 0
+        jobFeature.append("0:" + str(job_id))
+        acc_index = len(jobFeature)
         # for non-textual feature
         for i in NOMINAL_ATTR_SET:
             if not dictionaries[i].has_key(row[i]):
                 print "nokey:", row[i]
-                continue
-            # add to sparse feature matrix
-            jobFeature.append(str(acc_index+dictionaries[i][row[i]])+":1")
+            else:
+                # add to sparse feature matrix
+                jobFeature.append(str(acc_index+dictionaries[i][row[i]])+":1")
             acc_index += values[i] 
 
         # for textual feature (append in the last part)
-        description = row[DESCRIPTION_IDX]
-        tokens = nltk.word_tokenize(description)
-        text = nltk.Text(tokens)
-        text.tokens = processTokens(text.tokens)
-        for i in range(0, nKeywords):
-            count = text.count(keywords[i])
-            if count >= 1:
-                jobFeature.append(str(acc_index+i)+":1")
-
+        textFeature = textFeatIn.next()
+        for feat in textFeature:
+            pair = feat.split(':')
+            if len(pair) < 2: continue
+            index = int(pair[0]) + acc_index
+            jobFeature.append(str(index)+":"+pair[1])
         # write to out file
-        jobFeatureOut.writerows([jobFeature])
-        '''
-
-        # progress bar
-        pb.update(progress)
-        pb.display()
+        if train_jobs_id_lookup.has_key(job_id):
+            train_jobFeatureOut.writerows([jobFeature])
+        if test_jobs_id_lookup.has_key(job_id):
+            test_jobFeatureOut.writerows([jobFeature])
