@@ -135,7 +135,7 @@ int main(int argc, char** argv){
 		predict_list[i] = tmp;
 	}
 	
-	
+    // output pred file
 	ofstream fout_pred(pred_file);
 	for(int i=0;i<n1;i++){
 		vector<pair<int,double> >* tmp = predict_list[i];
@@ -146,6 +146,16 @@ int main(int argc, char** argv){
 		fout_pred << endl;
 	}
 	fout_pred.close();
+
+    // output prec_recall file
+
+    /*
+    ofstream fout_prec_recall (prec_recall_file);
+    fout_prec_recall << "precision recall" << endl;
+    // compute precision and recall
+
+    fout_prec_recall.close();
+    */
 	
 	return 0;
 }
