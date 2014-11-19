@@ -467,7 +467,7 @@ void readMat(char* A_file, vector<FreqList>& A, int n1){
 
 
 
-void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<FreqList>& A, int K, double* U, double* V, double lambda, int max_iter=3){
+void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<FreqList>& A, int K, double* U, double* V, double lambda, int max_iter=40){
 	
 	int n1 = X.size();
 	int n2 = Y.size();	
@@ -497,7 +497,6 @@ void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<Freq
 	//Alternating Least-Square Iterations
 	int iter = 0;
 	while( iter < max_iter ){
-		
 		
 		cerr << "solve U..." << endl;
 		solver_U->tron_quad(U);

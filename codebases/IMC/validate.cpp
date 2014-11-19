@@ -61,24 +61,32 @@ bool scoreCompare(pair<int,double> a, pair<int,double> b) { return (a.second > b
 int main(int argc, char** argv){
 	
 	if( argc < 6 ){
-		cerr << "./predict [X] [Y] [model_file] [top#] [pred_file] " << endl;
+		cerr << "./validate [X] [Y] [model_file] [ground_truth_file] [prec_recall_file]" << endl;
 		exit(0);
 	}
 	
 	char* X_file = argv[1];
 	char* Y_file = argv[2];
 	char* model_file = argv[3];
-	int TOP_K = atoi(argv[4]);
-	char* pred_file = argv[5];
+	char* ground_truth_file = argv[4];
+	char* prec_recall_file = argv[5];
 	
 	vector<Feature*> X;
 	vector<Feature*> Y;
 	int tmp;
 	readFea(X_file, X, tmp);
 	readFea(Y_file, Y, tmp);
+
+    // read ground truth
+    vector<Feature*> ground_truth;
+    readFea(ground_truth_file, ground_truth, tmp);
 	
 	int n1 = X.size();
 	int n2 = Y.size();
+    if (ground_truth.size() != n1) {
+        cerr << "inconsistent G.size() and X.size()" << endl;
+        exit(-1);    
+    }
 	
 	int d1, d2, K;
 	double* U;
@@ -86,12 +94,11 @@ int main(int argc, char** argv){
 	readModel(model_file, U, V, d1, d2, K);
 	
 	cerr << "n1=" << n1 << ", n2=" << n2 << ", d1=" << d1 << ", d2=" << d2 << ", K=" << K << endl;
-	//construct latent features
+	//construct latent topic features
 	Feature* x;
 	vector<double*> UTx_list;
 	double* UTx;
 	for(int i=0;i<n1;i++){
-		
 		x = X[i];
 		UTx = new double[K];
 		matrix_vec_mul(x,U,d1,K,UTx); //#
@@ -126,35 +133,45 @@ int main(int argc, char** argv){
 		}
 		sort( item_score_list.begin(), item_score_list.end(), scoreCompare );
 		vector<pair<int,double> >* tmp = new vector<pair<int,double> >();
-		tmp->resize(TOP_K);
-		for(int j=0;j<TOP_K;j++){
+		tmp->resize(n2);
+		for(int j=0;j<n2;j++){
 			pair<int,double> p = item_score_list[j];
 			(*tmp)[j] = p;
 		}
 		predict_list[i] = tmp;
 	}
-	
-    // output pred file
-	ofstream fout_pred(pred_file);
-	for(int i=0;i<n1;i++){
-		vector<pair<int,double> >* tmp = predict_list[i];
-		for(int j=0;j<TOP_K;j++){
-			pair<int,double> p = tmp->at(j);
-			fout_pred << p.first << ":" << p.second << " ";
-		}
-		fout_pred << endl;
-	}
-	fout_pred.close();
-
-    // output prec_recall file
-
-    /*
+     
+    int T = 0;
+    vector< set<int> > true_indices (n1, set<int>());
+    for(int i=0;i<n1;i++){
+        int T_user = ground_truth[i]->size();
+        T += T_user;
+        for (int j=0;j<T_user;j++) {
+            Feature tmp = (*ground_truth[i]);
+            true_indices[i].insert(tmp[j].first);
+        }
+    }
+    cerr << "True Label in total = " << T << endl;
     ofstream fout_prec_recall (prec_recall_file);
-    fout_prec_recall << "precision recall" << endl;
-    // compute precision and recall
-
+    fout_prec_recall << "Recall Precision " << endl;
+    fout_prec_recall.flush();
+    int TP = 0;
+    for(int j=0;j<n2;j++) {
+        for(int i=0;i<n1;i++){
+            int job_index = (*predict_list[i])[j].first;
+            set<int>::iterator it = true_indices[i].find(job_index);
+            if (it != true_indices[i].end()) TP += 1;
+        }
+        int P = (j+1) * n2;
+        int FP = P - TP;  
+        int TN = T - TP;  
+        double precision = 1.0 * TP / P;
+        double recall = 1.0 * TP / T;
+        // cerr << recall << " " << precision  << endl;
+        fout_prec_recall << recall  << " " << precision << endl;
+        fout_prec_recall.flush();
+    }
     fout_prec_recall.close();
-    */
-	
 	return 0;
+
 }
