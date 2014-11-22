@@ -1,0 +1,25 @@
+#!/bin/bash
+
+cwd=$(pwd)
+echo "cwd: ${cwd}"
+
+K=(3 5 8 10 15 20) # 25 30 35 40 50)
+lambda=1
+(../train ../win1/train_A ../win1/train_X ../win1/train_Y 3 $lambda $cwd/model_K3 && 
+../validate ../win1/test_X ../win1/test_Y $cwd/model_K3 ../win1/test_A $cwd/recall_prec_K3
+) &
+(../train ../win1/train_A ../win1/train_X ../win1/train_Y 5 $lambda $cwd/model_K5 && 
+../validate ../win1/test_X ../win1/test_Y $cwd/model_K5 ../win1/test_A $cwd/recall_prec_K5
+) &
+(../train ../win1/train_A ../win1/train_X ../win1/train_Y 8 $lambda $cwd/model_K8 && 
+../validate ../win1/test_X ../win1/test_Y $cwd/model_K8 ../win1/test_A $cwd/recall_prec_K8
+) &
+(../train ../win1/train_A ../win1/train_X ../win1/train_Y 10 $lambda $cwd/model_K10 && 
+../validate ../win1/test_X ../win1/test_Y $cwd/model_K10 ../win1/test_A $cwd/recall_prec_K10
+) &
+(../train ../win1/train_A ../win1/train_X ../win1/train_Y 15 $lambda $cwd/model_K15 &&
+../validate ../win1/test_X ../win1/test_Y $cwd/model_K15 ../win1/test_A $cwd/recall_prec_K15
+) &
+(../train ../win1/train_A ../win1/train_X ../win1/train_Y 20 $lambda $cwd/model_K20 &&
+../validate ../win1/test_X ../win1/test_Y $cwd/model_K20 ../win1/test_A $cwd/recall_prec_K20
+) 
