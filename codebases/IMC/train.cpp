@@ -157,6 +157,7 @@ class ALS_fun : public function {
 	  */
           
 	public:
+        double alpha;
 	ALS_fun(vector<Feature*>* _X, int _d1, double** _H, int _n2, int _K, vector<FreqList >* _clicks, double _lambda){
 		
 		X = _X;
@@ -177,7 +178,7 @@ class ALS_fun : public function {
 				num_clicks += it->second;
 			}
 		}
-		alpha = 1.0 - (double)num_clicks / n1 / n2 ;
+		alpha =  1.0; //1.0 - (double)num_clicks / n1 / n2 ;
 		cerr << "1-alpha=" << 1.0-alpha << endl;
 
 		lambda = _lambda;
@@ -186,7 +187,7 @@ class ALS_fun : public function {
 	
 	double fun(double* U){
 		
-		// \frac{1}{2}(2a-1) \sum_{A_ij=1} (f(xi,yj)-1)^2
+		// (1-alpha) \sum_{A_ij=1} (f(xi,yj)-1)^2
 		Feature* x;
 		double* h;
 		int j, freq;
@@ -207,7 +208,7 @@ class ALS_fun : public function {
 				sum_1 += freq*(pred-1.0)*(pred-1.0);
 			}
 		}
-		sum_1 = (2.0*alpha-1.0)*sum_1/2.0;
+		sum_1 = (1.0 - alpha)*sum_1;
 
 		// \frac{1}{2}(1-a) \|XWH'-A\|_F^2
 		double sum_2 = 0.0;
@@ -232,6 +233,7 @@ class ALS_fun : public function {
 		
 		// term2 = -2*XWH'A + |A|_F^2
 		//#pragma omp parallel for
+        /*
 		for(int i=0;i<n1;i++){
 			x = X->at(i);
 			matrix_vec_mul(x,U,K, tmp);
@@ -244,6 +246,7 @@ class ALS_fun : public function {
 			}
 		}
 		delete[] tmp;
+        */
 		
 		sum_2 = (1.0-alpha)*(sum_2)/2.0;
 		
@@ -422,7 +425,6 @@ class ALS_fun : public function {
 	vector<Feature*>* X;
 	double** H;
 	vector<FreqList>* A;
-	double alpha;
 	double lambda;
 	int n1;
 	int d1;
@@ -430,47 +432,12 @@ class ALS_fun : public function {
 	int K;
 };
 
-
-void readMat(char* A_file, vector<FreqList>& A, int n1){
-	
-	A.clear();
-	A.resize(n1);
-	
-	ifstream fin(A_file);
-	char* line_cstr = new char[LINE_LEN];
-	vector<string> tokens;
-	vector<string> subtokens;
-	int row;
-	while( !fin.eof() ){
-		
-		fin.getline(line_cstr, LINE_LEN);
-		if( fin.eof() )
-			break;
-		
-		string line(line_cstr);
-		tokens = split(line, " ");
-		
-		row = atoi(tokens[0].c_str());
-		
-		//parse items
-		for(int i=1;i<tokens.size();i++){
-			subtokens = split(tokens[i], ":");
-			A[row].push_back( 
-					make_pair(atoi(subtokens[0].c_str()), atoi(subtokens[1].c_str()))
-				       	);
-		}
-	}
-	fin.close();
-	
-	delete[] line_cstr;
-}
-
-
-
-void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<FreqList>& A, int K, double* U, double* V, double lambda, int max_iter=40){
+void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<FreqList>& A, int K, double* U, double* V, double lambda, int max_iter=30){
 	
 	int n1 = X.size();
 	int n2 = Y.size();	
+    int dd1 = d1 * K;
+    int dd2 = d2 * K;
 	
 	//transposed click matrix in sparse format
 	vector<FreqList> A_tp;
@@ -496,20 +463,69 @@ void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<Freq
 	
 	//Alternating Least-Square Iterations
 	int iter = 0;
+    cerr << "iter: " << iter << endl;
 	while( iter < max_iter ){
 		
-		cerr << "solve U..." << endl;
+		// cerr << "solve U..." << endl;
 		solver_U->tron_quad(U);
 		//update Hq=XU
 		matrix_mul(Hq, &X, U, K);
 		
-		cerr << "solve V..." << endl;
+		// cerr << "solve V..." << endl;
 		solver_V->tron_quad(V);
 		//update Hi=YV
 		matrix_mul(Hi, &Y, V, K);
-		//cerr << "solved U, obj=" << als_fun_U->fun(U) << endl;
-		cout << "iter=" << iter << ", obj=" << als_fun_V->fun(V) << endl;
-		
+		//cerr << "solved U, obj=" << als_fun_U->fun(U) + ||V||^2<< endl;
+		// cout << "iter=" << iter << ", obj=" << als_fun_V->fun(V) + ||U||^2<< endl;
+        cerr << "UV solved" << endl;
+        //-----------------------------------------------------------
+        vector<double> sum1 (n1, 0.0);
+        vector<double> sum2 (n1, 0.0);
+        // #pragma omp parallel for
+        for(int i=0;i<n1;i++){
+            double tmp_sum1 = 0.0;
+            double tmp_sum2 = 0.0;
+
+            double* UTx = Hq[i];
+            double sim_score, pred;
+            vector<double> item_score_list;
+            item_score_list.resize(n2);
+            item_score_list.clear();
+            for(int j=0;j<n2;j++){
+                double* VTy = Hi[j];
+                pred = prod(UTx, VTy, K); //#
+                item_score_list.push_back( pred );
+                cerr << pred << endl;
+            }
+
+            set<int> true_index;
+            for (int j=0;j<A[i].size();j++) {
+                int index = A[i][j].first;
+                tmp_sum1 += (item_score_list[index]-1)*(item_score_list[index]-1);
+                true_index.insert(index);
+            }
+            for (int j=0;j<n2;j++) {
+                int index = j;
+                set<int>::iterator it = true_index.find(index);
+                if (it != true_index.end())
+                    tmp_sum2 += item_score_list[index]*item_score_list[index];
+            }
+            sum1[i] = tmp_sum1;
+            sum2[i] = tmp_sum2;
+        }
+        double tsum1 = 0.0, tsum2 = 0.0;
+        for (int i=0;i<n1;i++) tsum1 += sum1[i];
+        for (int i=0;i<n1;i++) tsum2 += sum2[i];
+        tsum1 *= 1-als_fun_V->alpha;
+        tsum2 *= als_fun_V->alpha;
+		double reg_U = 0.0, reg_V = 0.0;
+        for(int i=0;i<dd1;i++) reg_U += U[i]*U[i];
+		reg_U *= lambda/2.0;
+        for(int i=0;i<dd2;i++) reg_V += V[i]*V[i];
+		reg_V *= lambda/2.0;
+        cerr << "sum1=" << tsum1 << ", sum2=" << tsum2 << ", "
+            << "reg_U=" << reg_U << ", reg_V=" << reg_V << endl;
+        //-----------------------------------------------------------
 		iter++;
 	}
 }
@@ -566,8 +582,9 @@ int main(int argc, char** argv){
 	for(int j=0;j<V_size;j++)
 		V[j] = (double)rand()/RAND_MAX;
 	
-	train( X, d1, Y, d2, A, K,    U, V , lambda );
+	train( X, d1, Y, d2, A, K,    U, V , lambda);
 	
+    cerr << "out train.." << endl;
 	writeModel( model_file, U, V, d1, d2, K );
 	
 	return 0;

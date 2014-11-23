@@ -78,15 +78,17 @@ int main(int argc, char** argv){
 	readFea(Y_file, Y, tmp);
 
     // read ground truth
-    vector<Feature*> ground_truth;
-    readFea(ground_truth_file, ground_truth, tmp);
+    vector<FreqList> G;
+    readMat(ground_truth_file, G, tmp);
 	
 	int n1 = X.size();
 	int n2 = Y.size();
-    if (ground_truth.size() != n1) {
+    /*
+    if (G.size() != n1) {
         cerr << "inconsistent G.size() and X.size()" << endl;
         exit(-1);    
     }
+    */
 	
 	int d1, d2, K;
 	double* U;
@@ -114,6 +116,8 @@ int main(int argc, char** argv){
 		matrix_vec_mul(y,V,d2,K,VTy); //#
 		VTy_list.push_back(VTy);
 	}
+    cerr << "for prediction list" << endl;
+    // n1 = 10;
 	//predictions
 	vector<vector<pair<int,double> >* > predict_list;
 	predict_list.resize(n1);
@@ -140,38 +144,73 @@ int main(int argc, char** argv){
 		}
 		predict_list[i] = tmp;
 	}
-     
+
+    // get max energy and min energy
+    double max_value = -1e300, min_value = 1e300;
+    for (int i = 0; i < n1; i ++) {
+        double max_energy = (*predict_list[i])[0].second;
+        double min_energy = (*predict_list[i])[n2-1].second;
+        if (max_energy > max_value) 
+            max_value = max_energy;
+        if (min_energy < min_value) 
+            min_value = min_energy;
+    }
+    cerr << "max_value: " << max_value << endl;
+    cerr << "min_value: " << min_value << endl;
+
+    // construct hashmap for each user
     int T = 0;
     vector< set<int> > true_indices (n1, set<int>());
     for(int i=0;i<n1;i++){
-        int T_user = ground_truth[i]->size();
+        int T_user = G[i].size();
         T += T_user;
         for (int j=0;j<T_user;j++) {
-            Feature tmp = (*ground_truth[i]);
+            FreqList tmp = G[i];
             true_indices[i].insert(tmp[j].first);
         }
     }
+
+    // aux: check the position of known entries in predict_list
+   // ofstream aux_out ("aux");
+
+    // aux_out.close();
+
     cerr << "True Label in total = " << T << endl;
     ofstream fout_prec_recall (prec_recall_file);
-    fout_prec_recall << "Recall Precision " << endl;
+    // fout_prec_recall << "Recall Precision " << endl;
+     fout_prec_recall << "Value Recall Precision " << endl;
     fout_prec_recall.flush();
     int TP = 0;
-    for(int j=0;j<n2;j++) {
-        for(int i=0;i<n1;i++){
-            int job_index = (*predict_list[i])[j].first;
-            set<int>::iterator it = true_indices[i].find(job_index);
-            if (it != true_indices[i].end()) TP += 1;
+    int P = 0;
+    vector<int> current_index (n1, 0);
+    for (double value = max_value; value + 1 >= min_value; ) {
+        for (int i=0; i<n1; i++) {
+            while (current_index[i] < n2) {
+                int j = current_index[i];
+                int job_index = (*predict_list[i])[j].first;
+                double energy = (*predict_list[i])[j].second;
+                if (energy >= value) { // consider this entry
+                    set<int>::iterator it = true_indices[i].find(job_index);
+                    if (it != true_indices[i].end()) 
+                        TP += 1;
+                    P += 1;
+                    ++ current_index[i];
+                } else break;
+            }
         }
-        int P = (j+1) * n2;
         int FP = P - TP;  
         int TN = T - TP;  
         double precision = 1.0 * TP / P;
         double recall = 1.0 * TP / T;
         // cerr << recall << " " << precision  << endl;
-        fout_prec_recall << recall  << " " << precision << endl;
+     //   fout_prec_recall <<  recall  << " " << precision << endl;
+        fout_prec_recall << value << " " << recall  << " " << precision << endl;
         fout_prec_recall.flush();
+        if (value > -10 && value < 10)
+            value -= 0.01;
+        else
+            value -= 1;
     }
     fout_prec_recall.close();
-	return 0;
-
+    return 0;
 }

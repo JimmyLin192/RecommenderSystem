@@ -10,6 +10,7 @@ const int LINE_LEN = 1000000;
 typedef vector<pair<int,double> > Feature; 
 typedef vector<pair<int,int> > FreqList;
 
+void readMat(char* A_file, vector<FreqList>& A, int n1);
 void readFea(char* X_file, vector<Feature*>& X, int& d);
 
 void writeModel(char* fname, double* U, double* V, int d1, int d2, int K);
