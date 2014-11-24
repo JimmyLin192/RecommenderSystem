@@ -170,25 +170,42 @@ int main(int argc, char** argv){
         }
     }
 
-    // aux: check the position of known entries in predict_list
-   // ofstream aux_out ("aux");
+    int TP = 0, P = 0;
+    // MAP list
+    /*
+    ofstream MAP_out ("MAP");
+    MAP_out << "N MAP" << endl;
+    int MIN_MAP = 1, MAX_MAP = 300;
+    vector<double> MAP_values (MAX_MAP, 0.0);
+    int j = 0;
+    int TP = 0, P = 0;
+    vector<double> AP (n1, 0.0);
+    for (int nMAP = MIN_MAP; nMAP < MAX_MAP; nMAP++) {
+        // update AP of each user
 
-    // aux_out.close();
+        // compute mean_AP
+        double sum_AP = 0;
+        for (int i=0; i<n1; i++) 
+            sum_AP += AP[i];
+        double mean_AP = sum_AP / n1;
+        MAP_out << nMAP << " " << mean_AP << endl;
+    }
+    MAP_out.close();
+    */
 
     cerr << "True Label in total = " << T << endl;
     ofstream fout_prec_recall (prec_recall_file);
     // fout_prec_recall << "Recall Precision " << endl;
-     fout_prec_recall << "Value Recall Precision " << endl;
+      fout_prec_recall << "Value Recall Precision " << endl;
     fout_prec_recall.flush();
-    int TP = 0;
-    int P = 0;
+    TP = 0; P = 0;
     vector<int> current_index (n1, 0);
     for (double value = max_value; value + 1 >= min_value; ) {
         for (int i=0; i<n1; i++) {
             while (current_index[i] < n2) {
                 int j = current_index[i];
-                int job_index = (*predict_list[i])[j].first;
-                double energy = (*predict_list[i])[j].second;
+                int job_index = (*(predict_list[i]))[j].first;
+                double energy = (*(predict_list[i]))[j].second;
                 if (energy >= value) { // consider this entry
                     set<int>::iterator it = true_indices[i].find(job_index);
                     if (it != true_indices[i].end()) 
@@ -203,11 +220,11 @@ int main(int argc, char** argv){
         double precision = 1.0 * TP / P;
         double recall = 1.0 * TP / T;
         // cerr << recall << " " << precision  << endl;
-     //   fout_prec_recall <<  recall  << " " << precision << endl;
-        fout_prec_recall << value << " " << recall  << " " << precision << endl;
+        // fout_prec_recall <<  recall  << " " << precision << endl;
+         fout_prec_recall << value << " " << recall  << " " << precision << endl;
         fout_prec_recall.flush();
-        if (value > -10 && value < 10)
-            value -= 0.01;
+        if (value > -1.5 && value < 1.5)
+            value -= 0.001;
         else
             value -= 1;
     }

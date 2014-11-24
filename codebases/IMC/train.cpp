@@ -158,7 +158,7 @@ class ALS_fun : public function {
           
 	public:
         double alpha;
-	ALS_fun(vector<Feature*>* _X, int _d1, double** _H, int _n2, int _K, vector<FreqList >* _clicks, double _lambda){
+	ALS_fun(vector<Feature*>* _X, int _d1, double** _H, int _n2, int _K, vector<FreqList >* _clicks, double _lambda, double _alpha){
 		
 		X = _X;
 		n1 = X->size(); //number of queries (or items)
@@ -169,6 +169,7 @@ class ALS_fun : public function {
 		K = _K; //number of latent dimension
 		
 		A = _clicks;
+        alpha = _alpha;
 		
 		//compute alpha = 1 - |click|/|item|  (average)
 		int num_clicks = 0;
@@ -178,7 +179,7 @@ class ALS_fun : public function {
 				num_clicks += it->second;
 			}
 		}
-		alpha =  1.0; //1.0 - (double)num_clicks / n1 / n2 ;
+		// alpha = 0; //1.0 - (double)num_clicks / n1 / n2 ;
 		cerr << "1-alpha=" << 1.0-alpha << endl;
 
 		lambda = _lambda;
@@ -432,7 +433,7 @@ class ALS_fun : public function {
 	int K;
 };
 
-void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<FreqList>& A, int K, double* U, double* V, double lambda, int max_iter=30){
+void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<FreqList>& A, int K, double* U, double* V, double lambda,double alpha, int max_iter=1000){
 	
 	int n1 = X.size();
 	int n2 = Y.size();	
@@ -455,15 +456,15 @@ void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<Freq
 		Hi[i] = new double[K];
 	matrix_mul(Hi, &Y, V, K);
 	
-	ALS_fun* als_fun_U = new ALS_fun( &X, d1, Hi, n2, K, &A, lambda);
-	ALS_fun* als_fun_V = new ALS_fun( &Y, d2, Hq, n1, K, &A_tp, lambda);
+	ALS_fun* als_fun_U = new ALS_fun( &X, d1, Hi, n2, K, &A, lambda, alpha);
+	ALS_fun* als_fun_V = new ALS_fun( &Y, d2, Hq, n1, K, &A_tp, lambda, alpha);
 	
 	TRON* solver_U = new TRON(als_fun_U, 1e-1);
 	TRON* solver_V = new TRON(als_fun_V, 1e-1);
 	
 	//Alternating Least-Square Iterations
 	int iter = 0;
-    cerr << "iter: " << iter << endl;
+    // cerr << "iter: " << iter << endl;
 	while( iter < max_iter ){
 		
 		// cerr << "solve U..." << endl;
@@ -477,7 +478,7 @@ void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<Freq
 		matrix_mul(Hi, &Y, V, K);
 		//cerr << "solved U, obj=" << als_fun_U->fun(U) + ||V||^2<< endl;
 		// cout << "iter=" << iter << ", obj=" << als_fun_V->fun(V) + ||U||^2<< endl;
-        cerr << "UV solved" << endl;
+        // cerr << "UV solved" << endl;
         //-----------------------------------------------------------
         vector<double> sum1 (n1, 0.0);
         vector<double> sum2 (n1, 0.0);
@@ -495,7 +496,7 @@ void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<Freq
                 double* VTy = Hi[j];
                 pred = prod(UTx, VTy, K); //#
                 item_score_list.push_back( pred );
-                cerr << pred << endl;
+                // cerr << pred << endl;
             }
 
             set<int> true_index;
@@ -533,8 +534,8 @@ void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<Freq
 
 int main(int argc, char** argv){
 	
-	if( argc < 6 ){
-		cerr << "train [A] [X] [Y] [K] [lambda] (model)" << endl;
+	if( argc < 7 ){
+		cerr << "train [A] [X] [Y] [K] [lambda] [alpha] (model)" << endl;
 		cerr <<  endl;
 		cerr << "min_{U,V} (1-alpha)* sum_{A_ij=1} (x_i'UV'y_j - 1)^2" << endl
 		     << "              alpha* sum_{A_ij=0} (x_i'UV'y_j - 0)^2 + lambda/2*(|U|_F^2 + |V|_F^2)" << endl
@@ -552,10 +553,11 @@ int main(int argc, char** argv){
 	char* Y_file = argv[3];
 	int K = atoi(argv[4]);
 	double lambda = atof(argv[5]);
+	double alpha = atof(argv[6]);
 	
 	char* model_file;
-	if( argc > 6 )
-		model_file = argv[6];
+	if( argc > 7 )
+		model_file = argv[7];
 	else
 		model_file = "model";
 	
@@ -572,7 +574,8 @@ int main(int argc, char** argv){
 	vector< FreqList >  A;
 	readMat( A_file, A, n1 );
 	
-	cerr << "n1=" << n1 << ", n2=" << n2 << ", d1=" << d1 << ", d2=" << d2 << ", K=" << K << ", lambda=" << lambda << endl;
+	cerr << "n1=" << n1 << ", n2=" << n2 << ", d1=" << d1 << ", d2=" << d2 << ", K=" << K 
+        << ", lambda=" << lambda << ", alpha=" << alpha << endl;
 	int U_size = d1*K;
 	int V_size = d2*K;
 	double* U = new double[U_size];
@@ -582,7 +585,7 @@ int main(int argc, char** argv){
 	for(int j=0;j<V_size;j++)
 		V[j] = (double)rand()/RAND_MAX;
 	
-	train( X, d1, Y, d2, A, K,    U, V , lambda);
+	train( X, d1, Y, d2, A, K,    U, V , lambda, alpha);
 	
     cerr << "out train.." << endl;
 	writeModel( model_file, U, V, d1, d2, K );
