@@ -169,17 +169,18 @@ class ALS_fun : public function {
 		K = _K; //number of latent dimension
 		
 		A = _clicks;
-        alpha = _alpha;
+       		alpha = _alpha;
+		//alpha = 1.0 - 1e-4;
 		
 		//compute alpha = 1 - |click|/|item|  (average)
-		int num_clicks = 0;
+		/*int num_clicks = 0;
 		for(int i=0;i<A->size();i++){
 			FreqList::iterator it;
 			for(it=A->at(i).begin(); it!=A->at(i).end(); it++){
 				num_clicks += it->second;
 			}
 		}
-		// alpha = 0; //1.0 - (double)num_clicks / n1 / n2 ;
+		alpha = 1.0 - (double)num_clicks / n1 / n2 ;*/
 		cerr << "1-alpha=" << 1.0-alpha << endl;
 
 		lambda = _lambda;
@@ -433,7 +434,7 @@ class ALS_fun : public function {
 	int K;
 };
 
-void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<FreqList>& A, int K, double* U, double* V, double lambda,double alpha, int max_iter=1000){
+void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<FreqList>& A, int K, double* U, double* V, double lambda,double alpha, int max_iter=10){
 	
 	int n1 = X.size();
 	int n2 = Y.size();	
@@ -525,7 +526,8 @@ void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<Freq
         for(int i=0;i<dd2;i++) reg_V += V[i]*V[i];
 		reg_V *= lambda/2.0;
         cerr << "sum1=" << tsum1 << ", sum2=" << tsum2 << ", "
-            << "reg_U=" << reg_U << ", reg_V=" << reg_V << endl;
+            << "reg_U=" << reg_U << ", reg_V=" << reg_V
+	        << ", obj=" << tsum1 + tsum2 + reg_U + reg_V << endl;
         //-----------------------------------------------------------
 		iter++;
 	}
@@ -535,10 +537,10 @@ void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<Freq
 int main(int argc, char** argv){
 	
 	if( argc < 7 ){
-		cerr << "train [A] [X] [Y] [K] [lambda] [alpha] (model)" << endl;
+		cerr << "train [A] [X] [Y] [K] [lambda] [1-alpha] (model)" << endl;
 		cerr <<  endl;
-		cerr << "min_{U,V} (1-alpha)* sum_{A_ij=1} (x_i'UV'y_j - 1)^2" << endl
-		     << "              alpha* sum_{A_ij=0} (x_i'UV'y_j - 0)^2 + lambda/2*(|U|_F^2 + |V|_F^2)" << endl
+		cerr << "min_{U,V}  alpha* sum_{A_ij=1} (x_i'UV'y_j - 1)^2" << endl
+		     << "           (1-alpha)* sum_{A_ij=0} (x_i'UV'y_j - 0)^2 + lambda/2*(|U|_F^2 + |V|_F^2)" << endl
 		     << "A: n1*n2" << endl
 		     << "X: n1*d1" << endl
 		     << "Y: n2*d2" << endl
@@ -547,13 +549,15 @@ int main(int argc, char** argv){
 		exit(0);
 	}
 	
+	omp_set_num_threads(6);
+
 	srand(1000);
 	char* A_file = argv[1];
 	char* X_file = argv[2];
 	char* Y_file = argv[3];
 	int K = atoi(argv[4]);
 	double lambda = atof(argv[5]);
-	double alpha = atof(argv[6]);
+	double alpha = 1.0-atof(argv[6]);
 	
 	char* model_file;
 	if( argc > 7 )

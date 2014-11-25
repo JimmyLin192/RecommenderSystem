@@ -60,16 +60,17 @@ bool scoreCompare(pair<int,double> a, pair<int,double> b) { return (a.second > b
 
 int main(int argc, char** argv){
 	
-	if( argc < 6 ){
-		cerr << "./validate [X] [Y] [model_file] [ground_truth_file] [prec_recall_file]" << endl;
+	if( argc < 7 ){
+		cerr << "./validate [G] [X] [Y] [model] [MAP_file] [prec_recall_curve]" << endl;
 		exit(0);
 	}
 	
-	char* X_file = argv[1];
-	char* Y_file = argv[2];
-	char* model_file = argv[3];
-	char* ground_truth_file = argv[4];
-	char* prec_recall_file = argv[5];
+	char* G_file = argv[1];
+	char* X_file = argv[2];
+	char* Y_file = argv[3];
+	char* model_file = argv[4];
+    char* MAP_file = argv[5];
+	char* prec_recall_file = argv[6];
 	
 	vector<Feature*> X;
 	vector<Feature*> Y;
@@ -79,7 +80,7 @@ int main(int argc, char** argv){
 
     // read ground truth
     vector<FreqList> G;
-    readMat(ground_truth_file, G, tmp);
+    readMat(G_file, G, tmp);
 	
 	int n1 = X.size();
 	int n2 = Y.size();
@@ -116,7 +117,6 @@ int main(int argc, char** argv){
 		matrix_vec_mul(y,V,d2,K,VTy); //#
 		VTy_list.push_back(VTy);
 	}
-    cerr << "for prediction list" << endl;
     // n1 = 10;
 	//predictions
 	vector<vector<pair<int,double> >* > predict_list;
@@ -170,35 +170,47 @@ int main(int argc, char** argv){
         }
     }
 
-    int TP = 0, P = 0;
     // MAP list
-    /*
-    ofstream MAP_out ("MAP");
-    MAP_out << "N MAP" << endl;
-    int MIN_MAP = 1, MAX_MAP = 300;
-    vector<double> MAP_values (MAX_MAP, 0.0);
-    int j = 0;
-    int TP = 0, P = 0;
-    vector<double> AP (n1, 0.0);
-    for (int nMAP = MIN_MAP; nMAP < MAX_MAP; nMAP++) {
+    ofstream MAP_out (MAP_file);
+    MAP_out << "Position MAP" << endl;
+    int MIN_MAP = 0, MAX_MAP = 300;
+    vector<double> MAP_AP (n1, 0.0);  // average precision for each user
+    vector<int> MAP_TP (n1, 0); // TP (hit) for each user query
+    vector<int> MAP_T (n1, 0); // T for each user query
+    for (int i=0; i<n1; i++) {
+        // MAP_out << true_indices[i].size() << endl;
+        MAP_T[i] = true_indices[i].size();
+    }
+    for (int pos = MIN_MAP; pos < MAX_MAP && pos < n2; pos ++) {
         // update AP of each user
-
+        for (int i=0; i<n1; i++) {
+            int j = pos;
+            int job_index = (*(predict_list[i]))[j].first;
+            set<int>::iterator it = true_indices[i].find(job_index);
+            if (it != true_indices[i].end()) { // positive and true
+                MAP_TP[i] += 1;
+                MAP_AP[i] += (1.0 * MAP_TP[i] / (pos+1)) * (1.0 / MAP_T[i]);
+                //cerr << MAP_TP[i] << ", " << (1.0 / MAP_T[i])<< ", " << MAP_AP[i] << endl;
+            }
+        }
         // compute mean_AP
-        double sum_AP = 0;
-        for (int i=0; i<n1; i++) 
-            sum_AP += AP[i];
+        double sum_AP = 0.0;
+        for (int i=0; i<n1; i++) {
+            // MAP_out << "   " << MAP_AP[i] << endl;
+            sum_AP += MAP_AP[i];
+        }
         double mean_AP = sum_AP / n1;
-        MAP_out << nMAP << " " << mean_AP << endl;
+        MAP_out << pos+1 << " " << mean_AP << endl;
+        MAP_out.flush();
     }
     MAP_out.close();
-    */
 
     cerr << "True Label in total = " << T << endl;
     ofstream fout_prec_recall (prec_recall_file);
     // fout_prec_recall << "Recall Precision " << endl;
       fout_prec_recall << "Value Recall Precision " << endl;
     fout_prec_recall.flush();
-    TP = 0; P = 0;
+    int TP = 0, P = 0;
     vector<int> current_index (n1, 0);
     for (double value = max_value; value + 1 >= min_value; ) {
         for (int i=0; i<n1; i++) {
@@ -215,8 +227,8 @@ int main(int argc, char** argv){
                 } else break;
             }
         }
-        int FP = P - TP;  
-        int TN = T - TP;  
+        // int FP = P - TP;  
+        // int TN = T - TP;  
         double precision = 1.0 * TP / P;
         double recall = 1.0 * TP / T;
         // cerr << recall << " " << precision  << endl;
