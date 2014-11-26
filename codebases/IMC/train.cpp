@@ -434,7 +434,18 @@ class ALS_fun : public function {
 	int K;
 };
 
-void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<FreqList>& A, int K, double* U, double* V, double lambda,double alpha, int max_iter=10){
+void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<FreqList>& A, int K, double* U, double* V, double lambda,double alpha, char* model_file, int max_iter=20){
+
+    //-----------------------------------------------
+    char sum1_file[300];
+    char sum2_file[300];
+    char regU_file[300];
+    char regV_file[300];
+    sprintf(sum1_file, "%s.sum1", model_file);
+    sprintf(sum2_file, "%s.sum2", model_file);
+    sprintf(regU_file, "%s.regU", model_file);
+    sprintf(regV_file, "%s.regV", model_file);
+    //-----------------------------------------------
 	
 	int n1 = X.size();
 	int n2 = Y.size();	
@@ -462,6 +473,16 @@ void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<Freq
 	
 	TRON* solver_U = new TRON(als_fun_U, 1e-1);
 	TRON* solver_V = new TRON(als_fun_V, 1e-1);
+    //-----------------------------------------------
+    ofstream sum1_out (sum1_file);
+    ofstream sum2_out (sum2_file);
+    ofstream regU_out (regU_file);
+    ofstream regV_out (regV_file);
+    sum1_out << "#iter E_o" << endl; 
+    sum2_out << "#iter E_u" << endl;
+    regU_out << "#iter regU" << endl;    
+    regV_out << "#iter regV" << endl;
+    //-----------------------------------------------
 	
 	//Alternating Least-Square Iterations
 	int iter = 0;
@@ -528,11 +549,20 @@ void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<Freq
         cerr << "sum1=" << tsum1 << ", sum2=" << tsum2 << ", "
             << "reg_U=" << reg_U << ", reg_V=" << reg_V
 	        << ", obj=" << tsum1 + tsum2 + reg_U + reg_V << endl;
+
+        //-----------------------------------------------------------
+        sum1_out << iter << " " << tsum1 << endl; 
+        sum2_out << iter << " " << tsum2 << endl; 
+        regU_out << iter << " " << reg_U << endl;    
+        regV_out << iter << " " << reg_V << endl;
         //-----------------------------------------------------------
 		iter++;
 	}
+    sum1_out.close(); 
+    sum2_out.close(); 
+    regU_out.close(); 
+    regV_out.close(); 
 }
-
 
 int main(int argc, char** argv){
 	
@@ -589,7 +619,7 @@ int main(int argc, char** argv){
 	for(int j=0;j<V_size;j++)
 		V[j] = (double)rand()/RAND_MAX;
 	
-	train( X, d1, Y, d2, A, K,    U, V , lambda, alpha);
+	train( X, d1, Y, d2, A, K,    U, V , lambda, alpha, model_file);
 	
     cerr << "out train.." << endl;
 	writeModel( model_file, U, V, d1, d2, K );

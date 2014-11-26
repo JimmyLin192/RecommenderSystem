@@ -211,6 +211,7 @@ int main(int argc, char** argv){
       fout_prec_recall << "Value Recall Precision " << endl;
     fout_prec_recall.flush();
     int TP = 0, P = 0;
+    double last_recall = 0;
     vector<int> current_index (n1, 0);
     for (double value = max_value; value + 1 >= min_value; ) {
         for (int i=0; i<n1; i++) {
@@ -232,8 +233,11 @@ int main(int argc, char** argv){
         double precision = 1.0 * TP / P;
         double recall = 1.0 * TP / T;
         // cerr << recall << " " << precision  << endl;
-        // fout_prec_recall <<  recall  << " " << precision << endl;
-         fout_prec_recall << value << " " << recall  << " " << precision << endl;
+        if (recall != 0 && recall > last_recall) {
+            fout_prec_recall <<  recall  << " " << precision << endl;
+        }
+        last_recall = recall;
+        // fout_prec_recall << value << " " << recall  << " " << precision << endl;
         fout_prec_recall.flush();
         if (value > -1.5 && value < 1.5)
             value -= 0.001;
