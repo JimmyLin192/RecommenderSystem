@@ -434,7 +434,7 @@ class ALS_fun : public function {
 	int K;
 };
 
-void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<FreqList>& A, int K, double* U, double* V, double lambda,double alpha, char* model_file, int max_iter=20){
+void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<FreqList>& A, int K, double* U, double* V, double lambda,double alpha, char* model_file, int max_iter=30){
 
     //-----------------------------------------------
     char sum1_file[300];
@@ -471,8 +471,8 @@ void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<Freq
 	ALS_fun* als_fun_U = new ALS_fun( &X, d1, Hi, n2, K, &A, lambda, alpha);
 	ALS_fun* als_fun_V = new ALS_fun( &Y, d2, Hq, n1, K, &A_tp, lambda, alpha);
 	
-	TRON* solver_U = new TRON(als_fun_U, 1e-1);
-	TRON* solver_V = new TRON(als_fun_V, 1e-1);
+    TRON* solver_U = new TRON(als_fun_U, 1e-1);
+    TRON* solver_V = new TRON(als_fun_V, 1e-1);
     //-----------------------------------------------
     ofstream sum1_out (sum1_file);
     ofstream sum2_out (sum2_file);
@@ -483,23 +483,23 @@ void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<Freq
     regU_out << "#iter regU" << endl;    
     regV_out << "#iter regV" << endl;
     //-----------------------------------------------
-	
-	//Alternating Least-Square Iterations
-	int iter = 0;
+
+    //Alternating Least-Square Iterations
+    int iter = 0;
     // cerr << "iter: " << iter << endl;
-	while( iter < max_iter ){
-		
-		// cerr << "solve U..." << endl;
-		solver_U->tron_quad(U);
-		//update Hq=XU
-		matrix_mul(Hq, &X, U, K);
-		
-		// cerr << "solve V..." << endl;
-		solver_V->tron_quad(V);
-		//update Hi=YV
-		matrix_mul(Hi, &Y, V, K);
-		//cerr << "solved U, obj=" << als_fun_U->fun(U) + ||V||^2<< endl;
-		// cout << "iter=" << iter << ", obj=" << als_fun_V->fun(V) + ||U||^2<< endl;
+    while( iter < max_iter ){
+
+        // cerr << "solve U..." << endl;
+        solver_U->tron_quad(U);
+        //update Hq=XU
+        matrix_mul(Hq, &X, U, K);
+
+        // cerr << "solve V..." << endl;
+        solver_V->tron_quad(V);
+        //update Hi=YV
+        matrix_mul(Hi, &Y, V, K);
+        //cerr << "solved U, obj=" << als_fun_U->fun(U) + ||V||^2<< endl;
+        // cout << "iter=" << iter << ", obj=" << als_fun_V->fun(V) + ||U||^2<< endl;
         // cerr << "UV solved" << endl;
         //-----------------------------------------------------------
         vector<double> sum1 (n1, 0.0);
@@ -541,14 +541,14 @@ void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<Freq
         for (int i=0;i<n1;i++) tsum2 += sum2[i];
         tsum1 *= 1-als_fun_V->alpha;
         tsum2 *= als_fun_V->alpha;
-		double reg_U = 0.0, reg_V = 0.0;
+        double reg_U = 0.0, reg_V = 0.0;
         for(int i=0;i<dd1;i++) reg_U += U[i]*U[i];
-		reg_U *= lambda/2.0;
+        reg_U *= lambda/2.0;
         for(int i=0;i<dd2;i++) reg_V += V[i]*V[i];
-		reg_V *= lambda/2.0;
+        reg_V *= lambda/2.0;
         cerr << "sum1=" << tsum1 << ", sum2=" << tsum2 << ", "
             << "reg_U=" << reg_U << ", reg_V=" << reg_V
-	        << ", obj=" << tsum1 + tsum2 + reg_U + reg_V << endl;
+            << ", obj=" << tsum1 + tsum2 + reg_U + reg_V << endl;
 
         //-----------------------------------------------------------
         sum1_out << iter << " " << tsum1 << endl; 
@@ -556,8 +556,14 @@ void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<Freq
         regU_out << iter << " " << reg_U << endl;    
         regV_out << iter << " " << reg_V << endl;
         //-----------------------------------------------------------
-		iter++;
-	}
+        if (iter % 3 == 0 || iter % 9 == 0) {
+            char iter_model_file[300];
+            sprintf(iter_model_file, "%s.%d", model_file, iter);
+            writeModel( iter_model_file, U, V, d1, d2, K );
+        }
+        //-----------------------------------------------------------
+        iter++;
+    }
     sum1_out.close(); 
     sum2_out.close(); 
     regU_out.close(); 
@@ -565,64 +571,64 @@ void train(vector<Feature*>& X, int d1, vector<Feature*>& Y, int d2, vector<Freq
 }
 
 int main(int argc, char** argv){
-	
-	if( argc < 7 ){
-		cerr << "train [A] [X] [Y] [K] [lambda] [1-alpha] (model)" << endl;
-		cerr <<  endl;
-		cerr << "min_{U,V}  alpha* sum_{A_ij=1} (x_i'UV'y_j - 1)^2" << endl
-		     << "           (1-alpha)* sum_{A_ij=0} (x_i'UV'y_j - 0)^2 + lambda/2*(|U|_F^2 + |V|_F^2)" << endl
-		     << "A: n1*n2" << endl
-		     << "X: n1*d1" << endl
-		     << "Y: n2*d2" << endl
-		     << "U: d1*K" << endl
-		     << "V: d2*K" << endl;
-		exit(0);
-	}
-	
-	omp_set_num_threads(6);
 
-	srand(1000);
-	char* A_file = argv[1];
-	char* X_file = argv[2];
-	char* Y_file = argv[3];
-	int K = atoi(argv[4]);
-	double lambda = atof(argv[5]);
-	double alpha = 1.0-atof(argv[6]);
-	
-	char* model_file;
-	if( argc > 7 )
-		model_file = argv[7];
-	else
-		model_file = "model";
-	
+    if( argc < 7 ){
+        cerr << "train [A] [X] [Y] [K] [lambda] [1-alpha] (model)" << endl;
+        cerr <<  endl;
+        cerr << "min_{U,V}  alpha* sum_{A_ij=1} (x_i'UV'y_j - 1)^2" << endl
+            << "           (1-alpha)* sum_{A_ij=0} (x_i'UV'y_j - 0)^2 + lambda/2*(|U|_F^2 + |V|_F^2)" << endl
+            << "A: n1*n2" << endl
+            << "X: n1*d1" << endl
+            << "Y: n2*d2" << endl
+            << "U: d1*K" << endl
+            << "V: d2*K" << endl;
+        exit(0);
+    }
 
-	//Read Features of X and Y
-	vector<Feature*> X;
-	vector<Feature*> Y;
-	int n1, n2, d1, d2;
-	readFea(X_file, X, d1);
-	readFea(Y_file, Y, d2);
-	n1 = X.size();
-	n2 = Y.size();
-	
-	vector< FreqList >  A;
-	readMat( A_file, A, n1 );
-	
-	cerr << "n1=" << n1 << ", n2=" << n2 << ", d1=" << d1 << ", d2=" << d2 << ", K=" << K 
+    omp_set_num_threads(6);
+
+    srand(1000);
+    char* A_file = argv[1];
+    char* X_file = argv[2];
+    char* Y_file = argv[3];
+    int K = atoi(argv[4]);
+    double lambda = atof(argv[5]);
+    double alpha = 1.0-atof(argv[6]);
+
+    char* model_file;
+    if( argc > 7 )
+        model_file = argv[7];
+    else
+        model_file = "model";
+
+
+    //Read Features of X and Y
+    vector<Feature*> X;
+    vector<Feature*> Y;
+    int n1, n2, d1, d2;
+    readFea(X_file, X, d1);
+    readFea(Y_file, Y, d2);
+    n1 = X.size();
+    n2 = Y.size();
+
+    vector< FreqList >  A;
+    readMat( A_file, A, n1 );
+
+    cerr << "n1=" << n1 << ", n2=" << n2 << ", d1=" << d1 << ", d2=" << d2 << ", K=" << K 
         << ", lambda=" << lambda << ", alpha=" << alpha << endl;
-	int U_size = d1*K;
-	int V_size = d2*K;
-	double* U = new double[U_size];
-	double* V = new double[V_size];
-	for(int i=0;i<U_size;i++)
-		U[i] = (double)rand()/RAND_MAX;
-	for(int j=0;j<V_size;j++)
-		V[j] = (double)rand()/RAND_MAX;
-	
-	train( X, d1, Y, d2, A, K,    U, V , lambda, alpha, model_file);
-	
+    int U_size = d1*K;
+    int V_size = d2*K;
+    double* U = new double[U_size];
+    double* V = new double[V_size];
+    for(int i=0;i<U_size;i++)
+        U[i] = (double)rand()/RAND_MAX;
+    for(int j=0;j<V_size;j++)
+        V[j] = (double)rand()/RAND_MAX;
+
+    train( X, d1, Y, d2, A, K,    U, V , lambda, alpha, model_file);
+
     cerr << "out train.." << endl;
-	writeModel( model_file, U, V, d1, d2, K );
-	
-	return 0;
+    // writeModel( model_file, U, V, d1, d2, K );
+
+    return 0;
 }

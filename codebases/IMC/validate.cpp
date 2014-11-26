@@ -207,8 +207,8 @@ int main(int argc, char** argv){
 
     cerr << "True Label in total = " << T << endl;
     ofstream fout_prec_recall (prec_recall_file);
-    // fout_prec_recall << "Recall Precision " << endl;
-      fout_prec_recall << "Value Recall Precision " << endl;
+     fout_prec_recall << "Recall Precision " << endl;
+     // fout_prec_recall << "Value Recall Precision " << endl;
     fout_prec_recall.flush();
     int TP = 0, P = 0;
     double last_recall = 0;
@@ -239,10 +239,7 @@ int main(int argc, char** argv){
         last_recall = recall;
         // fout_prec_recall << value << " " << recall  << " " << precision << endl;
         fout_prec_recall.flush();
-        if (value > -1.5 && value < 1.5)
-            value -= 0.001;
-        else
-            value -= 1;
+        value -= 0.001;
     }
     fout_prec_recall.close();
     return 0;
