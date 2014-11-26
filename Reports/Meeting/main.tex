@@ -8,7 +8,7 @@
 %\documentstyle[nips14submit_09,times,art10]{article} % For LaTeX 2.09
 \usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
 
-\title{Project Report: Application Prediction}
+\title{Recruitment Analytics: Predict Applicant Behavior from Sparsely Labeled }
 
 \author{
 %XIN LIN \\
@@ -58,8 +58,11 @@
 
 \maketitle
 
-\section{Optimization}
-\subsection{Conventional Matrix Completion}
+\section{Introduction}
+
+\section{Formulation}
+\subsection{Optimization}
+\subsubsection{Classic Matrix Completion}
 % 2.2 latent factor model 
 The latent factor model has an underlying assumption: the real exact rating matrix are
 low-rank matrix. By modelling target rating variable as 
@@ -70,14 +73,14 @@ Then we are able to use least square cost to guide the optimization procedure:
 \begin{equation}
     \begin{aligned}
         &\min_{U,V} 
-        && \sum_{(i,j)\in \Omega} (A_{ij} - U_i^T V_j)^2
+        && \sum_{(i,j)} (A_{ij} - U_i^T V_j)^2
         + \frac{\lambda}{2}(||U||_F^2 + ||V||_F^2)
     \end{aligned}
 \end{equation}
 where $A_{i,j}$ is the observed ground-truth entry and $\Omega$ is the index set of
 entries that are observed. 
 
-\subsection{One-Class Matrix Completion}
+\subsubsection{One-Class Matrix Completion}
 \begin{equation}
     \begin{aligned}
         &\min_{U,V} 
@@ -89,7 +92,7 @@ entries that are observed.
 %    Since some jobs have fairly limited number of previous history, then
 %    One-Class Matrix Completion is expected to have bad performance.
 %\end{remark}
-\subsection{Conventional Inductive Matrix Completion}
+\subsubsection{Inductive Matrix Completion}
 % brief math introduction
 Formulate the problem as that of recovering a low-rank matrix $W_*$ using
 observed entries $R_{ij} = x_i^T W_{*} y_j$ and the user/job feature vectors $x_i$, $y_j$. By
@@ -97,22 +100,20 @@ factoring $W = U V^T$ , we see that this scheme constitutes a bi-linear
 prediction $(x^T U_{*})(V_{*} y)$ for a new user/job pair $(x, y)$.
 \begin{equation}
     \begin{aligned}
-        &\min_{U,V} &&\sum_{(i,j)\in \Omega} (A_{ij} - x_i^TUV^Ty_j)^2 
+        &\min_{U,V} &&\sum_{(i,j)} (A_{ij} - x_i^TUV^Ty_j)^2 
         + \frac{\lambda}{2}(||U||_F^2 + ||V||_F^2)
     \end{aligned}
 \end{equation}
 % break through: dhillon's paper - inductive matrix completion
-\begin{remark}
 According to \cite{jain2013provable}, under standard set of assumptions,
-alternating minimization provably converges at a linear rate to the global
+the alternating minimization provably converges at a linear rate to the global
 optimum of two low-rank estimation problems: a) RIP measurements based general
 low-rank matrix sensing, and b) low-rank matrix completion. A more recent
 paper \cite{natarajan2014inductive} in bioinformatics demonstrated successful
 application of such inductive matrix completion
 framework on gene-disease analytics.
-\end{remark}
 
-\subsection{One-Class Inductive Matrix Completion}
+\subsubsection{One-Class Inductive Matrix Completion}
 \begin{equation}
     \begin{aligned}
         &\min_{U,V} &&\sum_{(i,j)\in\Omega} (1 - x_i^TUV^Ty_j)^2 
@@ -120,7 +121,7 @@ framework on gene-disease analytics.
     \end{aligned}
 \end{equation}
 
-\subsection{One-Class Inductive Matrix Completion with Biases}
+\subsubsection{One-Class Inductive Matrix Completion with Biases}
 \begin{equation}
     \begin{aligned}
         &\min_{U,V} &&(1-\alpha) \sum_{A_{ij}=1} (1 - x_i^TUV^Ty_j)^2 +
@@ -128,36 +129,80 @@ framework on gene-disease analytics.
     \end{aligned}
 \end{equation}
 
-\subsection{One-Class Inductive Matrix Completion with kernel method}
-% 3.2 propose kernel-based inductive matrix completion?
-One possible enhancement for above inductive matrix completion is to
-extend our consideration from the linear association between features and
-latent factors to an version that accepts non-linear association.
-By this intuition, we can name this approach as 
-    {\it Kernel-based Inductive Matrix Completion}.
-By taking into account non-linear relations between designed features and hidden
-topics (shared latent factors), the space of latent factors can be largely
-expanded and then it would be more likely to automatically detect latent
-factors with higher quality. 
- 
-\subsection{One-Class Inductive Matrix Completion with pre-clustering}
+%\subsection{One-Class Inductive Matrix Completion with kernel method}
+%% 3.2 propose kernel-based inductive matrix completion?
+%One possible enhancement for above inductive matrix completion is to
+%extend our consideration from the linear association between features and
+%latent factors to an version that accepts non-linear association.
+%By this intuition, we can name this approach as 
+%    {\it Kernel-based Inductive Matrix Completion}.
+%By taking into account non-linear relations between designed features and hidden
+%topics (shared latent factors), the space of latent factors can be largely
+%expanded and then it would be more likely to automatically detect latent
+%factors with higher quality. 
+% 
+%\subsection{One-Class Inductive Matrix Completion with pre-clustering}
+\subsection{Assessments}
+In this research project, we employ Recall-Precision curve and MAP@N curve to 
+asess and visually present the accurate performance of a particular model. 
+\subsubsection{Recall-Precision Curve}
+% precision and recall definition
+In pattern recognition and information retrieval with binary classification,
+precision, a.k.a. positive predictive value, is the fraction of retrieved
+instances that are relevant, while recall, a.k.a. sensitivity, is the
+fraction of relevant instances that are retrieved. According to the general
+definition, the precision and recall in this recommendation problem can be
+formulated as 
+\begin{align}
+    \text{precision} &=  \\
+    \text{recall} &= 
+\end{align}
+% TODO: advantage of rp curve
 
-\section{Algorithm}
+% weakness of rp curve
+Nevertheless, precision and recall are single-value metrics that take no ordering information
+into account. Thus, the recall-precision curve cannot assess performance of a
+model from the "order-does-matter" perspective.
+\subsubsection{MAP@N Curve}
+For job recommendation system, it is supposed to return a ranked sequence of
+suitable jobs for users to apply. Therefore, it is desirable to also consider the
+order in which the returned jobs are presented. The mean average precision
+(MAP) does vary in terms of the order of returned jobs and thus cumulative
+MAP@N curve can serve as an effective tool to visualize the quality of queried
+recommendations for both ordering and accuracy.
+
+% AP
+The prerequisite of computing mean average precision is to figure out average
+precision (AP) for each queried user. The average precision at certain
+position $N$ is defined as
+\begin{align}
+    \text{AP@N} &= 
+\end{align}
+
+% MAP
+Taking the mean of average precision at the corresponding position for all
+queried users derives the mean average precision .
+\begin{align}
+    \text{MAP@N} &= 
+\end{align}
+
+% MAP@N remark
+
+\section{Implementation}
+\subsection{Algorithm}
 % algorithm presentation
 \newcommand{\xii}{\boldsymbol{x}_i}
 \newcommand{\yj}{\boldsymbol{y}_j}
-The algorithmic procedures for {\it One-class Inductive Matrix Completion} are
-shown in Algorithm \ref{alg:AltMin}.  
+The algorithmic description for {\it One-class Inductive Matrix Completion
+    with biased weight} are shown in Algorithm \ref{alg:AltMin}.  
 \begin{algorithm}
-    \caption{Alternating Minimization for 
-        One-Class Inductive Matrix Completion with Biases}
+    \caption{Alternating Minimization for One-Class Inductive Matrix Completion with Biases}
     \label{alg:AltMin}
     \begin{algorithmic}[1]
 
-\State \textbf{INPUT}: \\ \ \ a) sparse matrices $X$ and $Y$ denote features of users
-and jobs. \\ \ \ b) matrix $A$ denotes partial observation of application
-association with observed index set $\Omega$
-\State \
+\State \textbf{INPUT}: \\ \ \ a) sparse matrices $X$ and $Y$ that denote features of users
+and jobs respectively. \\ \ \ b) matrix $A$ that denotes partial observation
+of "apply" association with observed index set $\Omega$ \State \
 
 \State Initialize $U_{(0)}$ and $V_{0}$ by uniform randomization
 \State \textbf{Do}  
@@ -172,11 +217,11 @@ $U_{(k+1)}$ = argmin $(1-\alpha) \sum_{(i,j) \in \Omega}
     \alpha \sum_{(i,j) \not \in \Omega}
     (0-\xii^T U_{(k)} V_{(k+1)}^T \yj)^2$
 \State \textbf{Until} Convergence. 
-\State Predict values for missing entries: for some $ (i,j) \not \in \Omega$,
-\State 
-\ \  \ $R_{ij} = 1,\ \text{if } \xii^T U_{*} V_{*}^T \yj > \text{ cutoff } \phi$
-\State 
-\ \  \ $R_{ij} = 0,\ \text{otherwise}$
+%\State Predict values for missing entries: for some $ (i,j) \not \in \Omega$,
+%\State 
+%\ \  \ $R_{ij} = 1,\ \text{for top } r $ items
+%\State 
+%\ \  \ $R_{ij} = 0,\ \text{otherwise}$
 
 \State \
 
@@ -185,15 +230,14 @@ $U_{(k+1)}$ = argmin $(1-\alpha) \sum_{(i,j) \in \Omega}
 \end{algorithmic}
 \end{algorithm}
 
+%{{{ Newton Conjugate descent Method
 \begin{algorithm}
-    \caption{Alternating Minimization for 
-        One-Class Inductive Matrix Completion with Kernel Methods}
-    \label{alg:kernel}
+    \caption{Newton Conjugate Descent Subroutine}
+    \label{alg:newton}
     \begin{algorithmic}[1]
 
-\State \textbf{INPUT}: \\ \ \ a) sparse matrices $X$ and $Y$ denote features of users
-and jobs. \\ \ \ b) matrix $A$ denotes partial observation of application
-association with observed index set $\Omega$
+\State \textbf{INPUT}: \\ \ \ a) 
+\\ \ \ b) 
 \State \
 
 \State Initialize $U_{(0)}$ and $V_{0}$ by uniform randomization
@@ -203,10 +247,11 @@ association with observed index set $\Omega$
 \ \ a) Model Parameter $ U_{*}$ and $V_{*}$ 
 \end{algorithmic}
 \end{algorithm}
+%}}}
 
+%{{{ Prediction Routine
 \begin{algorithm}
-    \caption{Alternating Minimization for 
-        One-Class Inductive Matrix Completion with Pre-clustering}
+    \caption{Prediction}
     \label{alg:prec}
     \begin{algorithmic}[1]
 
@@ -222,19 +267,50 @@ association with observed index set $\Omega$
 \ \ a) Model Parameter $ U_{*}$ and $V_{*}$ 
 \end{algorithmic}
 \end{algorithm}
+%}}}
 
-\section{Practical Issues}
-% introduce problem and evaluation criteria
-Due to limitation of acquired data, our first experiment is oriented to
-problem of application prediction. Specifically, given a set of featured users
-and featured jobs, the designed system should predict whether one user will
-apply for one particular job.
+%{{{ Preclustering
+\begin{algorithm}
+    \caption{Preclustering}
+    \label{alg:preclustering}
+    \begin{algorithmic}[1]
 
-\subsection{One-class Matrix Completion with Bias} % 0.5 page
+\State \textbf{INPUT}: \\ \ \ a) sparse matrices $X$ and $Y$ that denote features of users
+and jobs respectively. \\ \ \ b) matrix $A$ that denotes partial observation
+of "apply" association with observed index set $\Omega$ \State \
+
+\State Initialize $U_{(0)}$ and $V_{0}$ by uniform randomization
+\State \textbf{Do}  
+\State \ \ \
+$V_{(k+1)}$ = argmin $(1-\alpha) \sum_{(i,j) \in \Omega} 
+    (1- \xii^T U_{(k)} V_{(k)}^T \yj)^2 
+    + \alpha \sum_{(i,j) \not \in \Omega} (0 - \xii^T U_{(k)} V_{(k)}^T \yj)^2$
+
+\State \  \
+$U_{(k+1)}$ = argmin $(1-\alpha) \sum_{(i,j) \in \Omega}
+    (1-\xii^T U_{(k)} V_{(k+1)}^T \yj)^2 +
+    \alpha \sum_{(i,j) \not \in \Omega}
+    (0-\xii^T U_{(k)} V_{(k+1)}^T \yj)^2$
+\State \textbf{Until} Convergence. 
+%\State Predict values for missing entries: for some $ (i,j) \not \in \Omega$,
+%\State 
+%\ \  \ $R_{ij} = 1,\ \text{for top } r $ items
+%\State 
+%\ \  \ $R_{ij} = 0,\ \text{otherwise}$
+
+\State \
+
+\State \textbf{OUTPUT: } \\ 
+\ \ a) Model Parameter $ U_{*}$ and $V_{*}$ 
+\end{algorithmic}
+\end{algorithm}
+%}}}
+
+
+\subsection{Practical Issues}
 \textbf{Bias}. Bias parameter $\alpha \in (0, 1)$ is the weight to balance
-optimization objective between observed and missing labels. Note that with
-unbiased version of inductive one-class matrix completion, this parameter
-should be set to $1$, that is $\alpha = 1$.
+optimization objective between observed and missing labels. Note that we can
+simply set $\alpha = 1$ to solve unbiased version of one-class inductive matrix completion.
 
 \textbf{Initialization}. Randomizing all components of $U_{(0)}$ and
 $V_{(0)}$ to uniform distribution over $(0, 1)$ works well in our
@@ -244,28 +320,41 @@ experimentation.
 During each stage of alternating minimization, standarded conjugate gradient method is
 employed to solve least square problem. 
 
-\section{Experiments}
-\subsection{Dataset and Preprocessed Data} 
+\section{Experiment I: Feature Extraction} % 3 pages
+\subsection{Dataset} 
 
-\subsection{Models for Comparison}
-\renewcommand{\labelenumi}{(\Roman{enumi})}
-\begin{enumerate}
-    \item One-Class Conventional Matrix Completion
-    \item One-Class Inductive Matrix Completion
-    \item One-Class Inductive Matrix Completion with Biases
-    \item (TBD) One-Class Inductive Matrix Completion with Kernel Methods 
-    \item (TBD) One-Class Inductive Matrix Completion with Pre-Clustering
-\end{enumerate}
+\subsection{Preprocessing}
+
+\section{Experiment II: Basic Parameters} % 4 pages
+
+\subsection{Effects of Rank $K$}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=55nm]{}
+    \includegraphics[width=55nm]{}
+    \caption{Performance Comparison between the trained models with various
+        $K=5,10,20,30,50$. 
+        Left: Precision-Recall Curve. Right: MAP@N Curve. }
+\end{figure}
+
+\subsection{Effects of Bias Weight $\alpha$}
+
+\subsection{Effects of Regularization Parameter $\lambda$}
+
+\subsection{Effects of Early Stopping}
+
+
+\section{Experiment III: Revisits Feature Engineering}
+\subsection{Best-Tuned Setting}
+
+\subsection{Principal Component analysis}
+
+
+\section{Experiment IV: Pre-clustered Matrix Completion}
 
 \subsection{Results}
-% Precision and Recall performance
 
 
-\begin{figure}[h]
-
-    \caption{Precision v.s. Recall Comparison between (I) (II) (III) with various number of topics
-        (a) $K=K_1$, (b) $K=K_2$, (c) $K=K_3$, (d) $K=K_4$. }
-\end{figure}
 
 \begin{figure}[h]
 
@@ -281,7 +370,11 @@ employed to solve least square problem.
 
 \section{Conclusions}
 % one concluding paragraph
+Features do provide supervision for recognizing the pattern of new users. 
 
+% in the future
+Future work can be extended to modeling time-series recommendation problem by
+means of one-class inductive matrix completion. 
 
 %\subsubsection*{References}
 \bibliography{main}{}
