@@ -5,6 +5,8 @@
 \usepackage{algorithm,algorithmicx}
 \usepackage[noend]{algpseudocode}
 \usepackage{url,graphicx,amsmath}
+\usepackage{caption}
+\usepackage[caption=false]{subfig}
 %\documentstyle[nips14submit_09,times,art10]{article} % For LaTeX 2.09
 \usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
 
@@ -328,13 +330,31 @@ employed to solve least square problem.
 \section{Experiment II: Basic Parameters} % 4 pages
 
 \subsection{Effects of Rank $K$}
-\begin{figure}[h]
+We trace the main term in training stage.
+\begin{figure}[hp]
     \centering
-    \includegraphics[width=55nm]{}
-    \includegraphics[width=55nm]{}
+    \captionsetup{justification=centering}
+    \subfloat{ \includegraphics[width=65mm]{Effect_K/E_o_Curve.eps} }
+    \subfloat{ \includegraphics[width=65mm]{Effect_K/E_u_Curve.eps} }
+    \caption{Trace $E_o$ and $E_u$ between the trained models with various
+        $K=5,10,20,30,50$. \newline
+        Left: $E_o$ Curve. Right: $E_u$ Curve. } 
+    \label{EffectK:Eo_Eu}
+\end{figure}
+
+The performance evaluation is as follows.
+\begin{figure}[hp]
+    \centering
+    \captionsetup{justification=centering}
+    \subfloat{
+        \includegraphics[width=65mm]{Effect_K/RP_Curve.eps}
+    }
+    \subfloat{
+        \includegraphics[width=70mm]{Effect_K/MAP_Curve.eps}
+    }
     \caption{Performance Comparison between the trained models with various
-        $K=5,10,20,30,50$. 
-        Left: Precision-Recall Curve. Right: MAP@N Curve. }
+        $K=5,10,20,30,50$.  Left: Precision-Recall Curve. Right: MAP@N Curve. }
+    \label{EffectK:RP_MAP}
 \end{figure}
 
 \subsection{Effects of Bias Weight $\alpha$}
